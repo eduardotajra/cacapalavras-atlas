@@ -33,9 +33,13 @@
 
   /* === Outer dark frame === */
   body {
-    padding: 24px 12px 60px;
+    padding: 32px 16px 60px;
     display: flex;
     justify-content: center;
+    align-items: flex-start;
+    min-height: 100vh;
+    background:
+      radial-gradient(ellipse at center, #221912 0%, #120c08 100%);
   }
 
   /* === The newspaper page === */
@@ -43,7 +47,6 @@
     position: relative;
     width: 100%;
     max-width: 1080px;
-    aspect-ratio: 1080 / 1380;
     background:
       radial-gradient(ellipse at 18% 22%, rgba(255,240,210,0.5), transparent 45%),
       radial-gradient(ellipse at 82% 78%, rgba(120, 80, 40, 0.18), transparent 55%),
@@ -213,6 +216,7 @@
     grid-template-rows: repeat(14, 1fr);
     gap: 0;
     aspect-ratio: 1;
+    width: 100%;
     user-select: none;
     -webkit-user-select: none;
     touch-action: none;
@@ -224,7 +228,7 @@
     justify-content: center;
     font-family: 'Special Elite', monospace;
     font-weight: 400;
-    font-size: clamp(14px, 2.1vw, 26px);
+    font-size: clamp(13px, 1.7vw, 22px);
     color: var(--ink);
     border: 0.5px solid rgba(28, 21, 14, 0.18);
     background: transparent;
@@ -373,12 +377,27 @@
   }
 
   /* === Responsive === */
+  @media (max-width: 960px) {
+    .page { padding: 44px 36px 56px; }
+    .content { grid-template-columns: 1fr 240px; gap: 20px; }
+  }
+
   @media (max-width: 760px) {
-    .page { padding: 32px 22px 50px; aspect-ratio: auto; }
-    .content { grid-template-columns: 1fr; }
+    body { padding: 16px 8px 40px; }
+    .page { padding: 32px 22px 50px; }
+    .content { grid-template-columns: 1fr; gap: 24px; }
     .wordlist { transform: rotate(0deg); margin-top: 6px; }
     .puzzle-wrap::before { font-size: 11px; }
     .splatter.mid { display: none; }
+    .splatter.tl, .splatter.br { width: 220px; }
+    .instructions { font-size: 14px; }
+    .wordlist ul { columns: 2; }
+  }
+
+  @media (max-width: 420px) {
+    .page { padding: 24px 14px 40px; }
+    h1.title { font-size: 48px !important; }
+    .splatter.tl, .splatter.br { width: 160px; opacity: 0.7; }
   }
 
   /* === Print === */
