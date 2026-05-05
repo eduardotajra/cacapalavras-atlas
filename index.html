@@ -668,13 +668,56 @@
   const DAYS = [{"key": "04-05", "label": "04/05", "subtitle": "EDIÇÃO Nº 1", "intro": "<em>Os moradores foram encontrados tristes pelas redondezas do Atlas, ouvindo música.</em> Arraste o dedo (ou o cursor) sobre a grade, em <b>linha reta</b>, na horizontal, vertical ou diagonal, para encontrar cada um deles. As palavras podem aparecer também de trás para frente.", "grid": [["K", "E", "M", "U", "B", "C", "R", "D", "L", "S", "B", "Q", "G", "B"], ["C", "N", "N", "M", "E", "G", "U", "I", "N", "H", "A", "C", "H", "C"], ["R", "N", "B", "S", "D", "H", "U", "U", "S", "B", "S", "S", "F", "M"], ["M", "B", "H", "B", "R", "E", "J", "N", "E", "R", "D", "S", "E", "J"], ["R", "I", "V", "F", "D", "S", "A", "T", "L", "A", "S", "S", "L", "U"], ["G", "L", "M", "D", "R", "W", "C", "S", "B", "T", "G", "L", "I", "P"], ["V", "R", "N", "I", "Y", "A", "I", "S", "H", "A", "K", "U", "P", "O"], ["S", "O", "L", "J", "R", "H", "Z", "F", "W", "Y", "H", "C", "E", "S"], ["J", "Q", "P", "P", "K", "A", "N", "O", "T", "A", "I", "X", "O", "J"], ["F", "T", "R", "C", "D", "Q", "N", "F", "Y", "K", "E", "P", "N", "N"], ["R", "B", "A", "V", "E", "C", "I", "L", "A", "C", "Y", "R", "S", "I"], ["I", "Z", "I", "K", "K", "W", "L", "T", "P", "S", "Z", "O", "C", "N"], ["X", "C", "A", "I", "P", "M", "A", "G", "G", "I", "W", "V", "C", "O"], ["B", "X", "W", "J", "U", "E", "R", "I", "N", "S", "F", "E", "M", "A"]], "words": ["ATLAS", "PRAIA", "NINO", "MIMIR", "AISHA", "LU", "MEGUINHA", "FELIPE", "MAGGI", "FRIX", "ALICE", "ANOTAI", "FEMA", "ERIN"], "wordlist_title": "Moradores", "wordlist_sub": "— Procurados —", "footer": "Edição especial dedicada aos moradores do <b>ATLAS</b>. Que a música os console.", "theme": "blood"}, {"key": "05-05", "label": "05/05", "subtitle": "EDIÇÃO Nº 2 — ANIVERSÁRIO", "intro": "<em>Hoje é aniversário do Meguinha!</em> Encontre as palavras escondidas para festejar. Arraste em <b>linha reta</b> sobre a grade, na horizontal, vertical ou diagonal. As palavras também podem estar de trás para frente.", "grid": [["M", "E", "I", "G", "O", "C", "N", "I", "C", "O", "R", "E", "Z", "C"], ["P", "D", "Z", "A", "E", "C", "E", "I", "P", "E", "N", "O", "W", "M"], ["M", "U", "S", "A", "G", "E", "M", "E", "L", "T", "T", "I", "L", "X"], ["X", "A", "R", "L", "Z", "W", "V", "T", "M", "I", "U", "H", "O", "X"], ["V", "R", "I", "U", "S", "P", "D", "T", "H", "A", "L", "E", "S", "A"], ["R", "D", "F", "S", "X", "E", "J", "T", "H", "R", "E", "N", "Y", "H"], ["U", "O", "B", "N", "M", "R", "D", "O", "I", "V", "U", "Y", "K", "N"], ["I", "O", "X", "G", "C", "A", "Y", "U", "B", "T", "S", "T", "X", "I"], ["U", "D", "T", "A", "H", "N", "I", "U", "G", "I", "E", "M", "O", "U"], ["H", "A", "W", "K", "D", "X", "O", "S", "O", "U", "N", "Z", "D", "G"], ["W", "T", "X", "M", "V", "W", "U", "M", "I", "F", "T", "V", "I", "E"], ["Y", "I", "Z", "O", "N", "M", "N", "E", "L", "Y", "S", "U", "B", "M"], ["A", "O", "B", "L", "A", "G", "N", "Y", "U", "F", "N", "I", "M", "E"], ["J", "C", "L", "D", "D", "K", "Y", "D", "J", "T", "I", "X", "L", "T"]], "words": ["MEGUINHA", "EDUARDO", "COITADO", "MAISMAIS", "MEIGUINHA", "MEIGO", "LITTLEMEGAS", "ONEPIECE", "PJO", "THALES", "JULIO", "ZEROCINCO"], "wordlist_title": "Aniversariante", "wordlist_sub": "— Parabéns, Meguinha! —", "footer": "Edição comemorativa em homenagem ao <b>MEGUINHA</b>. Que esse dia seja tão meigo quanto você.", "theme": "gold"}];
 
   const SIZE = 14;
+  const STORAGE_KEY = 'jornal-atlas-state-v1';
+  const DIRS = [[0,1],[1,0],[1,1],[-1,1],[0,-1],[-1,0],[-1,-1],[1,-1]];
+
   const dayContent = document.getElementById('dayContent');
   const dayFooter = document.getElementById('dayFooter');
   const tabsEl = document.getElementById('dayTabs');
 
+  // === Persistence (localStorage) ===
+  function loadState() {
+    try { return JSON.parse(localStorage.getItem(STORAGE_KEY)) || {}; }
+    catch (e) { return {}; }
+  }
+  function saveState(patch) {
+    try {
+      const cur = loadState();
+      const next = Object.assign({}, cur, patch);
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(next));
+    } catch (e) {}
+  }
+  function getDayFound(key) {
+    const s = loadState();
+    return ((s.days || {})[key] || {}).found || [];
+  }
+  function setDayFound(key, foundList) {
+    try {
+      const s = loadState();
+      s.days = s.days || {};
+      s.days[key] = Object.assign({}, s.days[key], { found: foundList });
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(s));
+    } catch (e) {}
+  }
+  function findWordPositions(grid, word) {
+    for (let r = 0; r < SIZE; r++) for (let c = 0; c < SIZE; c++) {
+      for (const [dr,dc] of DIRS) {
+        const cellsArr = [];
+        let ok = true;
+        for (let i = 0; i < word.length; i++) {
+          const nr = r + i*dr, nc = c + i*dc;
+          if (nr<0||nr>=SIZE||nc<0||nc>=SIZE||grid[nr][nc]!==word[i]) { ok = false; break; }
+          cellsArr.push([nr,nc]);
+        }
+        if (ok) return cellsArr;
+      }
+    }
+    return null;
+  }
+
   // === Pencil sound (WebAudio) ===
   let audioCtx = null;
-  let soundEnabled = true;
+  let soundEnabled = loadState().soundEnabled !== false;
   let noiseBuffer = null;
 
   function ensureAudio() {
@@ -804,8 +847,25 @@
     dayFooter.innerHTML = day.footer;
 
     buildGrid(day);
+    restoreFoundFromStorage(day);
     bindEvents();
     updateSoundBtn();
+    saveState({ activeDay: key });
+  }
+
+  function restoreFoundFromStorage(day) {
+    const saved = getDayFound(day.key);
+    saved.forEach(word => {
+      if (!day.words.includes(word)) return;
+      const positions = findWordPositions(day.grid, word);
+      if (!positions) return;
+      foundWords.add(word);
+      positions.forEach(([r,c]) => cells[r][c].classList.add('found'));
+      const li = document.getElementById('w-' + word);
+      if (li) li.classList.add('done');
+    });
+    const fc = document.getElementById('found-count');
+    if (fc) fc.textContent = foundWords.size;
   }
 
   function renderComingSoon() {
@@ -911,6 +971,7 @@
       if (fc) fc.textContent = foundWords.size;
       currentSelection = [];
       playStrokeFound();
+      setDayFound(currentDay.key, [...foundWords]);
 
       if (foundWords.size === currentDay.words.length) {
         setTimeout(() => {
@@ -987,12 +1048,14 @@
     const fc = document.getElementById('found-count');
     if (fc) fc.textContent = '0';
     clearSelection();
+    if (currentDay) setDayFound(currentDay.key, []);
   }
 
   function toggleSound() {
     soundEnabled = !soundEnabled;
     if (soundEnabled) ensureAudio();
     updateSoundBtn();
+    saveState({ soundEnabled });
   }
   function updateSoundBtn() {
     const btn = document.getElementById('soundBtn');
@@ -1002,24 +1065,38 @@
   }
 
   // === Tabs ===
+  function activateTab(dayKey) {
+    tabsEl.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+    const target = tabsEl.querySelector(`.tab[data-day="${dayKey}"]`);
+    if (target) target.classList.add('active');
+  }
   tabsEl.addEventListener('click', (e) => {
     const tab = e.target.closest('.tab');
     if (!tab) return;
     if (tab.classList.contains('disabled')) {
-      // Show coming-soon
-      tabsEl.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
-      tab.classList.add('active');
+      activateTab('future');
+      saveState({ activeDay: 'future' });
       renderComingSoon();
       return;
     }
     const day = tab.dataset.day;
-    tabsEl.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
-    tab.classList.add('active');
+    activateTab(day);
     renderDay(day);
   });
 
-  // Initial render
-  renderDay('04-05');
+  // === Initial render: restore last viewed day ===
+  const initialState = loadState();
+  const initialDay = initialState.activeDay || '04-05';
+  if (initialDay === 'future') {
+    activateTab('future');
+    renderComingSoon();
+  } else if (DAYS.find(d => d.key === initialDay)) {
+    activateTab(initialDay);
+    renderDay(initialDay);
+  } else {
+    activateTab('04-05');
+    renderDay('04-05');
+  }
 </script>
 
 </body>
