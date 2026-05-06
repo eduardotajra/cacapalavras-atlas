@@ -1,0 +1,48 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    // /users/{uid} — perfil privado, só o dono lê/escreve
+    match /users/{uid} {
+      allow read, write: if request.auth != null && request.auth.uid == uid;
+    }
+
+    // /scores/{uid_dayKey} — ranking público (qualquer um lê),
+    // só o próprio usuário pode escrever, e só na sua entrada
+    match /scores/{scoreId} {
+      allow read: if true;
+
+      allow create: if request.auth != null
+        && request.resource.data.uid == request.auth.uid
+        && scoreId == request.auth.uid + '_' + request.resource.data.dayKey
+        && request.resource.data.dayKey in ['04-05', '05-05', '06-05']
+        && request.resource.data.bestTimeMs is number
+        && request.resource.data.bestTimeMs > 1000
+        && request.resource.data.bestTimeMs < 7200000
+        && request.resource.data.nick is string
+        && request.resource.data.nick.size() >= 1
+        && request.resource.data.nick.size() <= 24;
+
+      allow update: if request.auth != null
+        && resource.data.uid == request.auth.uid
+        && scoreId == request.auth.uid + '_' + resource.data.dayKey
+        && (
+          // Apenas atualiza nick + attempts + updatedAt
+          request.resource.data.diff(resource.data).affectedKeys()
+            .hasOnly(['nick', 'attempts', 'updatedAt'])
+          ||
+          // Ou bate recorde (tempo menor) + atualiza atributos relacionados
+          (request.resource.data.bestTimeMs is number
+            && request.resource.data.bestTimeMs < resource.data.bestTimeMs
+            && request.resource.data.bestTimeMs > 1000
+            && request.resource.data.uid == resource.data.uid
+            && request.resource.data.dayKey == resource.data.dayKey)
+        )
+        && request.resource.data.nick is string
+        && request.resource.data.nick.size() >= 1
+        && request.resource.data.nick.size() <= 24;
+
+      allow delete: if false;
+    }
+  }
+}

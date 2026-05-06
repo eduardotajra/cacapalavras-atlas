@@ -660,6 +660,272 @@
     to { opacity: 1; transform: translateY(0); }
   }
 
+  /* === Auth status (top right of newspaper) === */
+  .auth-status {
+    margin: 10px auto 0;
+    text-align: center;
+    font-family: 'Special Elite', monospace;
+    font-size: 12px;
+    letter-spacing: 0.1em;
+    color: var(--ink-soft);
+  }
+  .auth-btn {
+    background: transparent;
+    border: 1.5px solid var(--ink);
+    padding: 5px 14px 3px;
+    font-family: 'Special Elite', monospace;
+    font-size: 12px;
+    letter-spacing: 0.14em;
+    color: var(--ink);
+    cursor: pointer;
+    transition: all 0.15s;
+  }
+  .auth-btn:hover { background: var(--ink); color: var(--paper-base); }
+  .auth-status .nick-display {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    padding: 4px 10px 3px;
+    border: 1px dashed var(--ink-soft);
+    background: rgba(255, 240, 210, 0.4);
+  }
+  .auth-status .nick-display b { color: var(--accent); font-weight: 600; }
+  .auth-status .auth-link {
+    background: none;
+    border: none;
+    text-decoration: underline;
+    cursor: pointer;
+    color: var(--ink-soft);
+    font-family: inherit;
+    font-size: inherit;
+    letter-spacing: inherit;
+    padding: 0 4px;
+  }
+  .auth-status .auth-link:hover { color: var(--accent); }
+
+  /* === Modal backdrop & card (shared) === */
+  .modal-backdrop {
+    position: fixed; inset: 0;
+    background: rgba(20, 12, 5, 0.65);
+    z-index: 200;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 20px;
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.22s ease;
+  }
+  .modal-backdrop.show { opacity: 1; pointer-events: auto; }
+  .modal-card {
+    position: relative;
+    background: var(--paper-base);
+    border: 2px solid var(--ink);
+    box-shadow:
+      6px 6px 0 var(--accent),
+      0 18px 40px rgba(0,0,0,0.5);
+    padding: 28px 32px 26px;
+    width: 100%;
+    max-width: 460px;
+    max-height: 90vh;
+    overflow-y: auto;
+    transform: scale(0.95) rotate(-1deg);
+    transition: transform 0.24s ease;
+  }
+  .modal-backdrop.show .modal-card { transform: scale(1) rotate(-1deg); }
+  .modal-card h2 {
+    font-family: 'Bowlby One', cursive;
+    font-size: 26px;
+    color: var(--ink);
+    letter-spacing: 0.04em;
+    margin-bottom: 4px;
+  }
+  .modal-close {
+    position: absolute;
+    top: 8px; right: 12px;
+    background: transparent;
+    border: none;
+    font-family: 'Special Elite', monospace;
+    font-size: 26px;
+    color: var(--ink-soft);
+    cursor: pointer;
+    line-height: 1;
+    padding: 4px 8px;
+    transition: color 0.15s;
+  }
+  .modal-close:hover { color: var(--accent); }
+
+  .modal-tabs {
+    display: flex;
+    gap: 6px;
+    margin: 14px 0 18px;
+    border-bottom: 1px dashed var(--ink-soft);
+    padding-bottom: 8px;
+  }
+  .modal-tab {
+    flex: 1;
+    background: transparent;
+    border: 1.5px solid var(--ink);
+    padding: 7px 12px 5px;
+    font-family: 'Special Elite', monospace;
+    font-size: 12px;
+    letter-spacing: 0.14em;
+    color: var(--ink);
+    cursor: pointer;
+    transition: all 0.15s;
+    text-transform: uppercase;
+  }
+  .modal-tab:hover { background: rgba(126, 20, 25, 0.10); }
+  .modal-tab.active {
+    background: var(--ink);
+    color: var(--paper-base);
+    box-shadow: 2px 2px 0 var(--accent);
+  }
+
+  /* Auth forms */
+  .auth-form label {
+    display: block;
+    font-family: 'Special Elite', monospace;
+    font-size: 12px;
+    letter-spacing: 0.12em;
+    color: var(--ink-soft);
+    text-transform: uppercase;
+    margin-bottom: 12px;
+  }
+  .auth-form input {
+    display: block;
+    width: 100%;
+    margin-top: 4px;
+    padding: 9px 12px;
+    background: rgba(255, 250, 230, 0.6);
+    border: 1.5px solid var(--ink);
+    font-family: 'Crimson Text', serif;
+    font-size: 16px;
+    color: var(--ink);
+    text-transform: none;
+    letter-spacing: normal;
+    box-shadow: inset 2px 2px 0 rgba(28, 21, 14, 0.06);
+  }
+  .auth-form input:focus {
+    outline: none;
+    border-color: var(--accent);
+    box-shadow:
+      inset 2px 2px 0 rgba(28, 21, 14, 0.06),
+      0 0 0 2px var(--accent);
+  }
+  .auth-actions {
+    margin-top: 14px;
+    display: flex;
+    gap: 10px;
+    justify-content: flex-end;
+  }
+  .primary-btn {
+    background: var(--ink);
+    color: var(--paper-base);
+    border: 2px solid var(--ink);
+    padding: 9px 22px 7px;
+    font-family: 'Bowlby One', cursive;
+    font-size: 14px;
+    letter-spacing: 0.06em;
+    cursor: pointer;
+    transition: all 0.15s;
+    box-shadow: 3px 3px 0 var(--accent);
+  }
+  .primary-btn:hover {
+    transform: translate(-1px, -1px);
+    box-shadow: 4px 4px 0 var(--accent);
+  }
+  .primary-btn:active {
+    transform: translate(2px, 2px);
+    box-shadow: 1px 1px 0 var(--accent);
+  }
+  .primary-btn:disabled { opacity: 0.55; cursor: wait; }
+  .auth-link {
+    background: none;
+    border: none;
+    color: var(--ink-soft);
+    text-decoration: underline;
+    cursor: pointer;
+    font-family: 'Special Elite', monospace;
+    font-size: 12px;
+    margin: -6px 0 8px;
+    padding: 0;
+  }
+  .auth-link:hover { color: var(--accent); }
+  .auth-feedback {
+    margin-top: 14px;
+    padding: 10px 12px;
+    border: 1px dashed var(--ink-soft);
+    background: rgba(255, 240, 210, 0.5);
+    font-family: 'Crimson Text', serif;
+    font-size: 14px;
+    color: var(--ink);
+    text-align: center;
+  }
+  .auth-feedback.error { border-color: var(--blood); color: var(--blood-deep); background: rgba(126, 20, 25, 0.10); }
+  .auth-feedback.success { border-color: #2d6a3a; color: #1d3d24; background: rgba(45, 106, 58, 0.10); }
+
+  /* Ranking modal */
+  .rank-modal { max-width: 540px; }
+  .rank-day {
+    font-family: 'Special Elite', monospace;
+    font-size: 13px;
+    letter-spacing: 0.18em;
+    color: var(--ink-soft);
+    text-transform: uppercase;
+    margin-top: 2px;
+  }
+  .rank-loading, .rank-empty {
+    text-align: center;
+    padding: 32px 12px;
+    font-family: 'Crimson Text', serif;
+    font-size: 16px;
+    color: var(--ink-soft);
+    font-style: italic;
+  }
+  .rank-table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-top: 4px;
+  }
+  .rank-table th {
+    font-family: 'Bowlby One', cursive;
+    font-size: 12px;
+    letter-spacing: 0.12em;
+    color: var(--ink);
+    text-align: left;
+    padding: 6px 8px;
+    border-bottom: 2px solid var(--ink);
+    text-transform: uppercase;
+  }
+  .rank-table td {
+    padding: 8px;
+    border-bottom: 1px dashed rgba(28, 21, 14, 0.25);
+    font-family: 'Crimson Text', serif;
+    font-size: 15px;
+    color: var(--ink);
+  }
+  .rank-table .rank-col-pos { width: 38px; text-align: center; }
+  .rank-table .rank-col-val { text-align: right; font-family: 'Special Elite', monospace; }
+  .rank-table tbody tr.me {
+    background: rgba(126, 20, 25, 0.08);
+    font-weight: 600;
+  }
+  .rank-table tbody tr.me td:first-child::before {
+    content: '★ ';
+    color: var(--accent);
+  }
+  .rank-table .pos-1 { color: #b88528; font-weight: 700; }
+  .rank-table .pos-2 { color: #6b6b6b; font-weight: 600; }
+  .rank-table .pos-3 { color: #8b5a2b; font-weight: 600; }
+
+  @media (max-width: 540px) {
+    .modal-card { padding: 22px 20px 22px; }
+    .modal-card h2 { font-size: 22px; }
+    .auth-form input { font-size: 16px; }
+    .rank-table td, .rank-table th { font-size: 14px; padding: 6px; }
+  }
+
   /* === Custom toast (replaces alert) === */
   .toast {
     position: fixed;
@@ -846,6 +1112,149 @@
   </g>
 </svg>
 
+<script type="module">
+  import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.13.2/firebase-app.js';
+  import {
+    getAuth, signInWithEmailAndPassword, createUserWithEmailAndPassword,
+    signOut as fbSignOut, onAuthStateChanged, sendPasswordResetEmail, updateProfile
+  } from 'https://www.gstatic.com/firebasejs/10.13.2/firebase-auth.js';
+  import {
+    getFirestore, doc, setDoc, getDoc, getDocs, query, where, orderBy, limit,
+    collection, serverTimestamp, initializeFirestore
+  } from 'https://www.gstatic.com/firebasejs/10.13.2/firebase-firestore.js';
+
+  const firebaseConfig = {
+    apiKey: "AIzaSyC9P1w3VRuSle6HlEyjbZrpjAnTndpuC0s",
+    authDomain: "jornal-atlas.firebaseapp.com",
+    projectId: "jornal-atlas",
+    storageBucket: "jornal-atlas.firebasestorage.app",
+    messagingSenderId: "842474356574",
+    appId: "1:842474356574:web:f6e087cb7f091ec4e519cf"
+  };
+
+  const app = initializeApp(firebaseConfig);
+  const auth = getAuth(app);
+  const db = getFirestore(app);
+
+  function mapAuthError(code) {
+    const m = {
+      'auth/email-already-in-use': 'Esse email já tem cadastro. Tente entrar.',
+      'auth/invalid-email': 'Email inválido.',
+      'auth/weak-password': 'Senha muito fraca. Use pelo menos 8 caracteres.',
+      'auth/user-not-found': 'Email não cadastrado.',
+      'auth/wrong-password': 'Senha incorreta.',
+      'auth/invalid-credential': 'Email ou senha incorretos.',
+      'auth/too-many-requests': 'Muitas tentativas. Espere alguns minutos.',
+      'auth/network-request-failed': 'Sem conexão com a internet.'
+    };
+    return m[code] || ('Erro: ' + code);
+  }
+
+  window.atlasCloud = {
+    onAuthChange(cb) { return onAuthStateChanged(auth, cb); },
+    currentUser() { return auth.currentUser; },
+
+    async signUp(email, password, nick) {
+      try {
+        const cred = await createUserWithEmailAndPassword(auth, email, password);
+        try { await updateProfile(cred.user, { displayName: nick }); } catch(_) {}
+        await setDoc(doc(db, 'users', cred.user.uid), {
+          email: email.toLowerCase(),
+          nick: nick.trim(),
+          createdAt: serverTimestamp()
+        });
+        return cred.user;
+      } catch (e) {
+        const msg = mapAuthError(e.code);
+        const err = new Error(msg); err.code = e.code; throw err;
+      }
+    },
+
+    async signIn(email, password) {
+      try {
+        const cred = await signInWithEmailAndPassword(auth, email, password);
+        return cred.user;
+      } catch (e) {
+        const msg = mapAuthError(e.code);
+        const err = new Error(msg); err.code = e.code; throw err;
+      }
+    },
+
+    async signOut() { await fbSignOut(auth); },
+
+    async resetPassword(email) {
+      try {
+        await sendPasswordResetEmail(auth, email);
+      } catch (e) {
+        const msg = mapAuthError(e.code);
+        const err = new Error(msg); err.code = e.code; throw err;
+      }
+    },
+
+    async getProfile(uid) {
+      const ref = doc(db, 'users', uid);
+      const snap = await getDoc(ref);
+      return snap.exists() ? snap.data() : null;
+    },
+
+    async updateNick(uid, nick) {
+      await setDoc(doc(db, 'users', uid), { nick: nick.trim() }, { merge: true });
+      try { if (auth.currentUser) await updateProfile(auth.currentUser, { displayName: nick.trim() }); } catch(_) {}
+    },
+
+    async submitScore(uid, nick, dayKey, timeMs) {
+      const ref = doc(db, 'scores', uid + '_' + dayKey);
+      const existing = await getDoc(ref);
+      if (existing.exists()) {
+        const cur = existing.data();
+        if (timeMs < (cur.bestTimeMs || Infinity)) {
+          await setDoc(ref, {
+            uid, nick, dayKey,
+            bestTimeMs: timeMs,
+            updatedAt: serverTimestamp(),
+            attempts: (cur.attempts || 1) + 1
+          }, { merge: true });
+          return { improved: true, prev: cur.bestTimeMs };
+        }
+        await setDoc(ref, {
+          nick,
+          attempts: (cur.attempts || 1) + 1,
+          updatedAt: serverTimestamp()
+        }, { merge: true });
+        return { improved: false, kept: cur.bestTimeMs };
+      }
+      await setDoc(ref, {
+        uid, nick, dayKey,
+        bestTimeMs: timeMs,
+        completedAt: serverTimestamp(),
+        updatedAt: serverTimestamp(),
+        attempts: 1
+      });
+      return { improved: true, firstTime: true };
+    },
+
+    async getRanking(dayKey, mode = 'speed', count = 20) {
+      const orderField = mode === 'speed' ? 'bestTimeMs' : 'completedAt';
+      const q = query(
+        collection(db, 'scores'),
+        where('dayKey', '==', dayKey),
+        orderBy(orderField, 'asc'),
+        limit(count)
+      );
+      const snap = await getDocs(q);
+      return snap.docs.map((d, i) => Object.assign({ rank: i + 1 }, d.data()));
+    },
+
+    async getMyEntry(uid, dayKey) {
+      const ref = doc(db, 'scores', uid + '_' + dayKey);
+      const snap = await getDoc(ref);
+      return snap.exists() ? snap.data() : null;
+    }
+  };
+
+  window.dispatchEvent(new Event('atlas-cloud-ready'));
+</script>
+
 <div class="toast" id="toast" role="status" aria-live="polite" aria-hidden="true">
   <div class="toast-stamp">EXTRA!</div>
   <div class="toast-body">
@@ -873,9 +1282,100 @@
     <button class="tab disabled" data-day="future" aria-disabled="true">Em breve</button>
   </nav>
 
+  <div class="auth-status" id="authStatus">
+    <button class="auth-btn" id="authOpenBtn" type="button">Entrar / Cadastrar</button>
+  </div>
+
   <main id="dayContent"></main>
 
   <footer class="page-footer" id="dayFooter"></footer>
+</div>
+
+<!-- Auth modal: signup + signin + reset -->
+<div class="modal-backdrop" id="authBackdrop" aria-hidden="true">
+  <div class="modal-card auth-modal" role="dialog" aria-modal="true" aria-labelledby="authTitle">
+    <button class="modal-close" data-close="auth" aria-label="Fechar">×</button>
+    <h2 id="authTitle">Entrar no Atlas</h2>
+    <div class="modal-tabs" id="authTabs">
+      <button class="modal-tab active" data-mode="signin" type="button">Entrar</button>
+      <button class="modal-tab" data-mode="signup" type="button">Cadastrar</button>
+    </div>
+
+    <form class="auth-form" id="signinForm" data-form="signin">
+      <label>Email
+        <input type="email" name="email" required autocomplete="email">
+      </label>
+      <label>Senha
+        <input type="password" name="password" required minlength="8" autocomplete="current-password">
+      </label>
+      <button class="auth-link" type="button" id="forgotBtn">Esqueci minha senha</button>
+      <div class="auth-actions">
+        <button class="primary-btn" type="submit">Entrar</button>
+      </div>
+    </form>
+
+    <form class="auth-form" id="signupForm" data-form="signup" hidden>
+      <label>Email
+        <input type="email" name="email" required autocomplete="email">
+      </label>
+      <label>Apelido
+        <input type="text" name="nick" required minlength="2" maxlength="24" autocomplete="username" placeholder="como aparece no ranking">
+      </label>
+      <label>Senha
+        <input type="password" name="password" required minlength="8" autocomplete="new-password" placeholder="mín. 8 caracteres">
+      </label>
+      <label>Confirmar senha
+        <input type="password" name="password2" required minlength="8" autocomplete="new-password">
+      </label>
+      <div class="auth-actions">
+        <button class="primary-btn" type="submit">Criar conta</button>
+      </div>
+    </form>
+
+    <p class="auth-feedback" id="authFeedback" hidden></p>
+  </div>
+</div>
+
+<!-- Ranking modal: speedrun + pioneer leaderboards -->
+<div class="modal-backdrop" id="rankBackdrop" aria-hidden="true">
+  <div class="modal-card rank-modal" role="dialog" aria-modal="true" aria-labelledby="rankTitle">
+    <button class="modal-close" data-close="rank" aria-label="Fechar">×</button>
+    <h2 id="rankTitle">Ranking</h2>
+    <p class="rank-day" id="rankDay">— —</p>
+    <div class="modal-tabs">
+      <button class="modal-tab active" data-rank="speed" type="button">🏃 Velocistas</button>
+      <button class="modal-tab" data-rank="pioneer" type="button">🏁 Pioneiros</button>
+    </div>
+    <div class="rank-loading" id="rankLoading" hidden>Carregando…</div>
+    <div class="rank-empty" id="rankEmpty" hidden>Ninguém aqui ainda. Seja o primeiro!</div>
+    <table class="rank-table" id="rankTable" hidden>
+      <thead>
+        <tr>
+          <th class="rank-col-pos">#</th>
+          <th class="rank-col-nick">Apelido</th>
+          <th class="rank-col-val" id="rankColVal">Tempo</th>
+        </tr>
+      </thead>
+      <tbody id="rankBody"></tbody>
+    </table>
+  </div>
+</div>
+
+<!-- Nick edit modal -->
+<div class="modal-backdrop" id="nickBackdrop" aria-hidden="true">
+  <div class="modal-card nick-modal" role="dialog" aria-modal="true">
+    <button class="modal-close" data-close="nick" aria-label="Fechar">×</button>
+    <h2>Trocar apelido</h2>
+    <form class="auth-form" id="nickForm">
+      <label>Novo apelido
+        <input type="text" name="nick" required minlength="2" maxlength="24">
+      </label>
+      <div class="auth-actions">
+        <button class="primary-btn" type="submit">Salvar</button>
+      </div>
+    </form>
+    <p class="auth-feedback" id="nickFeedback" hidden></p>
+  </div>
 </div>
 
 <script>
@@ -1143,6 +1643,7 @@
             <div class="controls">
               <button class="ctrl-btn" id="resetBtn">↻ Reiniciar</button>
               <button class="ctrl-btn" id="soundBtn">${soundEnabled ? '♪ Som' : '♪ Som'}</button>
+              <button class="ctrl-btn" id="rankBtn">🏆 Ranking</button>
             </div>
           </aside>
         </div>
@@ -1297,8 +1798,19 @@
           ? `Seu tempo: ${elapsedFmt} (novo recorde!)`
           : `Seu tempo: ${elapsedFmt}  ·  recorde: ${bestFmt}`;
         const shareText = buildShareText(currentDay, elapsedMs, isRecord);
+
+        // Submit to cloud if logged in; if not, queue + nudge user
+        let cloudLine = '';
+        if (cloudReady && authUser && authProfile) {
+          submitScoreToCloud(currentDay.key, elapsedMs);
+          cloudLine = '\nEnviado pro ranking!';
+        } else if (cloudReady) {
+          pendingScoreSubmit = { dayKey: currentDay.key, timeMs: elapsedMs };
+          cloudLine = '\nEntre/cadastre-se pra entrar no ranking.';
+        }
+
         setTimeout(() => {
-          showToast(isRecord ? 'Novo recorde!' : 'Completo!', `${baseMsg}\n${timeLine}`, { shareText });
+          showToast(isRecord ? 'Novo recorde!' : 'Completo!', `${baseMsg}\n${timeLine}${cloudLine}`, { shareText });
         }, 250);
       }
     } else {
@@ -1364,6 +1876,7 @@
     if (resetBtn) resetBtn.addEventListener('click', resetPuzzle);
     const soundBtn = document.getElementById('soundBtn');
     if (soundBtn) soundBtn.addEventListener('click', toggleSound);
+    if (typeof bindRankingButton === 'function') bindRankingButton();
 
     // Hover on word list -> draw marker line over found word
     const wordsEl = document.getElementById('words');
@@ -1519,6 +2032,282 @@
     activateTab(day);
     renderDay(day);
   });
+
+  // === Auth + Ranking (Firebase) ===
+  let authUser = null;
+  let authProfile = null;
+  let cloudReady = false;
+  let pendingScoreSubmit = null;
+
+  function setAuthUI() {
+    const status = document.getElementById('authStatus');
+    if (!status) return;
+    if (authUser && authProfile) {
+      status.innerHTML = `
+        <span class="nick-display">Logado como <b>${escapeHTML(authProfile.nick)}</b></span>
+        &nbsp;
+        <button class="auth-link" id="changeNickBtn" type="button">trocar apelido</button>
+        &nbsp;·&nbsp;
+        <button class="auth-link" id="signOutBtn" type="button">sair</button>
+      `;
+      document.getElementById('changeNickBtn').onclick = () => openModal('nick');
+      document.getElementById('signOutBtn').onclick = async () => {
+        await window.atlasCloud.signOut();
+      };
+    } else if (authUser && !authProfile) {
+      status.innerHTML = `<span class="nick-display">Carregando perfil…</span>`;
+    } else {
+      status.innerHTML = `<button class="auth-btn" id="authOpenBtn" type="button">Entrar / Cadastrar</button>`;
+      document.getElementById('authOpenBtn').onclick = () => openModal('auth');
+    }
+  }
+
+  function escapeHTML(s) {
+    return String(s ?? '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+  }
+
+  function openModal(name) {
+    const id = name === 'auth' ? 'authBackdrop' : name === 'rank' ? 'rankBackdrop' : 'nickBackdrop';
+    const bd = document.getElementById(id);
+    if (!bd) return;
+    bd.setAttribute('aria-hidden', 'false');
+    requestAnimationFrame(() => bd.classList.add('show'));
+    if (name === 'rank') loadRanking();
+    if (name === 'nick') {
+      const inp = document.querySelector('#nickForm input[name="nick"]');
+      if (inp && authProfile) inp.value = authProfile.nick;
+      setTimeout(() => inp?.focus(), 100);
+    }
+    if (name === 'auth') {
+      setTimeout(() => document.querySelector('#signinForm input[name="email"]')?.focus(), 100);
+    }
+  }
+  function closeModal(name) {
+    const id = name === 'auth' ? 'authBackdrop' : name === 'rank' ? 'rankBackdrop' : 'nickBackdrop';
+    const bd = document.getElementById(id);
+    if (!bd) return;
+    bd.classList.remove('show');
+    setTimeout(() => bd.setAttribute('aria-hidden', 'true'), 220);
+  }
+
+  // Close modals via X / backdrop click
+  document.querySelectorAll('.modal-close').forEach(btn => {
+    btn.addEventListener('click', () => closeModal(btn.dataset.close));
+  });
+  document.querySelectorAll('.modal-backdrop').forEach(bd => {
+    bd.addEventListener('click', (e) => {
+      if (e.target === bd) {
+        const map = { authBackdrop: 'auth', rankBackdrop: 'rank', nickBackdrop: 'nick' };
+        closeModal(map[bd.id]);
+      }
+    });
+  });
+
+  // Auth modal: tab switching
+  document.querySelectorAll('#authTabs .modal-tab').forEach(tab => {
+    tab.addEventListener('click', () => {
+      const mode = tab.dataset.mode;
+      document.querySelectorAll('#authTabs .modal-tab').forEach(t => t.classList.toggle('active', t === tab));
+      document.querySelectorAll('.auth-form').forEach(f => {
+        const isMatch = f.dataset.form === mode;
+        if (isMatch) f.removeAttribute('hidden'); else f.setAttribute('hidden', '');
+      });
+      setAuthFeedback('', '');
+    });
+  });
+
+  function setAuthFeedback(msg, type) {
+    const fb = document.getElementById('authFeedback');
+    if (!fb) return;
+    if (!msg) { fb.setAttribute('hidden', ''); fb.textContent = ''; return; }
+    fb.removeAttribute('hidden');
+    fb.classList.remove('error','success');
+    if (type) fb.classList.add(type);
+    fb.textContent = msg;
+  }
+
+  // Sign-in form
+  document.getElementById('signinForm')?.addEventListener('submit', async (e) => {
+    e.preventDefault();
+    if (!cloudReady) return;
+    const f = e.target;
+    const submitBtn = f.querySelector('button[type="submit"]');
+    submitBtn.disabled = true;
+    setAuthFeedback('Entrando…', '');
+    try {
+      await window.atlasCloud.signIn(f.email.value, f.password.value);
+      setAuthFeedback('Bem-vindo de volta!', 'success');
+      setTimeout(() => closeModal('auth'), 600);
+      f.reset();
+    } catch (err) {
+      setAuthFeedback(err.message, 'error');
+    } finally {
+      submitBtn.disabled = false;
+    }
+  });
+
+  // Sign-up form
+  document.getElementById('signupForm')?.addEventListener('submit', async (e) => {
+    e.preventDefault();
+    if (!cloudReady) return;
+    const f = e.target;
+    const submitBtn = f.querySelector('button[type="submit"]');
+    if (f.password.value !== f.password2.value) {
+      setAuthFeedback('As senhas não conferem.', 'error');
+      return;
+    }
+    if (f.password.value.length < 8) {
+      setAuthFeedback('Senha muito curta. Use pelo menos 8 caracteres.', 'error');
+      return;
+    }
+    const nick = f.nick.value.trim();
+    if (nick.length < 2) {
+      setAuthFeedback('Apelido muito curto.', 'error');
+      return;
+    }
+    submitBtn.disabled = true;
+    setAuthFeedback('Criando conta…', '');
+    try {
+      await window.atlasCloud.signUp(f.email.value, f.password.value, nick);
+      setAuthFeedback('Conta criada! Bom jogo.', 'success');
+      setTimeout(() => closeModal('auth'), 700);
+      f.reset();
+    } catch (err) {
+      setAuthFeedback(err.message, 'error');
+    } finally {
+      submitBtn.disabled = false;
+    }
+  });
+
+  // Forgot password
+  document.getElementById('forgotBtn')?.addEventListener('click', async () => {
+    const email = document.querySelector('#signinForm input[name="email"]').value.trim();
+    if (!email) { setAuthFeedback('Digite seu email primeiro.', 'error'); return; }
+    if (!cloudReady) return;
+    try {
+      await window.atlasCloud.resetPassword(email);
+      setAuthFeedback('Email de recuperação enviado. Confira sua caixa de entrada.', 'success');
+    } catch (err) {
+      setAuthFeedback(err.message, 'error');
+    }
+  });
+
+  // Nick edit form
+  document.getElementById('nickForm')?.addEventListener('submit', async (e) => {
+    e.preventDefault();
+    if (!authUser || !cloudReady) return;
+    const fb = document.getElementById('nickFeedback');
+    const f = e.target;
+    const newNick = f.nick.value.trim();
+    if (newNick.length < 2) { fb.textContent = 'Apelido muito curto.'; fb.classList.add('error'); fb.removeAttribute('hidden'); return; }
+    try {
+      await window.atlasCloud.updateNick(authUser.uid, newNick);
+      authProfile = Object.assign({}, authProfile, { nick: newNick });
+      setAuthUI();
+      closeModal('nick');
+    } catch (err) {
+      fb.textContent = 'Erro ao salvar: ' + (err.message || err.code);
+      fb.classList.add('error');
+      fb.removeAttribute('hidden');
+    }
+  });
+
+  // Ranking modal
+  let rankMode = 'speed';
+  document.querySelectorAll('#rankBackdrop .modal-tab').forEach(tab => {
+    tab.addEventListener('click', () => {
+      rankMode = tab.dataset.rank;
+      document.querySelectorAll('#rankBackdrop .modal-tab').forEach(t => t.classList.toggle('active', t === tab));
+      loadRanking();
+    });
+  });
+
+  async function loadRanking() {
+    if (!cloudReady || !currentDay) return;
+    const dayKey = currentDay.key;
+    document.getElementById('rankDay').textContent = `${currentDay.label} — ${currentDay.label === '04/05' ? 'EDIÇÃO Nº 1' : (currentDay.subtitle || '')}`;
+    const tbl = document.getElementById('rankTable');
+    const empty = document.getElementById('rankEmpty');
+    const loading = document.getElementById('rankLoading');
+    const valHeader = document.getElementById('rankColVal');
+    valHeader.textContent = rankMode === 'speed' ? 'Tempo' : 'Concluído em';
+    tbl.setAttribute('hidden', '');
+    empty.setAttribute('hidden', '');
+    loading.removeAttribute('hidden');
+    try {
+      const rows = await window.atlasCloud.getRanking(dayKey, rankMode, 25);
+      loading.setAttribute('hidden', '');
+      if (rows.length === 0) {
+        empty.removeAttribute('hidden');
+        return;
+      }
+      const myUid = authUser?.uid;
+      const tbody = document.getElementById('rankBody');
+      tbody.innerHTML = rows.map((r, i) => {
+        const pos = i + 1;
+        const posClass = pos <= 3 ? `pos-${pos}` : '';
+        const meClass = myUid && r.uid === myUid ? 'me' : '';
+        const valStr = rankMode === 'speed'
+          ? formatTime(r.bestTimeMs)
+          : (r.completedAt && r.completedAt.toDate ? r.completedAt.toDate().toLocaleDateString('pt-BR', {day:'2-digit', month:'2-digit', hour:'2-digit', minute:'2-digit'}) : '—');
+        return `<tr class="${meClass}">
+          <td class="rank-col-pos ${posClass}">${pos}</td>
+          <td>${escapeHTML(r.nick || '—')}</td>
+          <td class="rank-col-val">${valStr}</td>
+        </tr>`;
+      }).join('');
+      tbl.removeAttribute('hidden');
+    } catch (err) {
+      loading.setAttribute('hidden', '');
+      empty.textContent = 'Erro ao carregar: ' + (err.message || err.code || err);
+      empty.removeAttribute('hidden');
+    }
+  }
+
+  // Hook the ranking button on each day render — bound in bindEvents
+  function bindRankingButton() {
+    const btn = document.getElementById('rankBtn');
+    if (btn) btn.addEventListener('click', () => openModal('rank'));
+  }
+
+  // Score submission to cloud
+  async function submitScoreToCloud(dayKey, timeMs) {
+    if (!cloudReady || !authUser || !authProfile) return null;
+    try {
+      const result = await window.atlasCloud.submitScore(authUser.uid, authProfile.nick, dayKey, timeMs);
+      return result;
+    } catch (err) {
+      console.warn('submitScore failed:', err);
+      return null;
+    }
+  }
+
+  // Wait for the cloud module to load
+  function setupCloud() {
+    cloudReady = true;
+    window.atlasCloud.onAuthChange(async (user) => {
+      authUser = user || null;
+      if (user) {
+        try {
+          authProfile = await window.atlasCloud.getProfile(user.uid);
+          if (!authProfile) authProfile = { nick: user.displayName || user.email.split('@')[0] };
+        } catch (e) {
+          authProfile = { nick: user.displayName || 'Anônimo' };
+        }
+        // If there's a pending score from before login, submit now
+        if (pendingScoreSubmit) {
+          const { dayKey, timeMs } = pendingScoreSubmit;
+          pendingScoreSubmit = null;
+          submitScoreToCloud(dayKey, timeMs);
+        }
+      } else {
+        authProfile = null;
+      }
+      setAuthUI();
+    });
+  }
+  if (window.atlasCloud) setupCloud();
+  else window.addEventListener('atlas-cloud-ready', setupCloud, { once: true });
 
   // === Initial render: restore last viewed day ===
   const initialState = loadState();
