@@ -24,6 +24,10 @@
 
     --accent:      var(--blood);
     --accent-deep: var(--blood-deep);
+    --highlight-bg:   #f3c552;
+    --highlight-fg:   #2a1c0a;
+    --highlight-edge: rgba(80, 50, 15, 0.65);
+    --pencil:         rgba(77, 13, 16, 0.78);
   }
 
   /* Day-specific theme overrides */
@@ -32,6 +36,10 @@
     --accent-deep: var(--gold-deep);
     --paper-base: #ead8b3;
     --paper-mid:  #ddc89c;
+    --highlight-bg:   #fff0c4;
+    --highlight-fg:   #4a2f0e;
+    --highlight-edge: rgba(70, 45, 14, 0.6);
+    --pencil:         rgba(70, 45, 14, 0.82);
   }
 
   * { box-sizing: border-box; margin: 0; padding: 0; }
@@ -340,14 +348,36 @@
     background: var(--accent);
     box-shadow: inset 0 0 0 1px var(--accent-deep);
   }
+  /* Higher specificity than .cell.found so highlight wins regardless of order */
+  .cell.found.highlight,
   .cell.highlight {
-    background: var(--accent-deep);
-    color: #fff;
-    box-shadow:
-      inset 0 0 0 2px #fdf3d9,
-      0 0 14px 2px rgba(255, 230, 180, 0.55);
-    transform: scale(1.06);
-    z-index: 5;
+    background: var(--highlight-bg);
+    color: var(--highlight-fg);
+    text-shadow: 0 1px 0 rgba(255, 250, 220, 0.45);
+    font-weight: 700;
+    box-shadow: inset 0 0 0 1.5px var(--highlight-edge);
+    transition: background 0.18s ease, color 0.18s ease;
+    z-index: 6;
+  }
+
+  /* === Pencil stroke overlay (line through found word) === */
+  .grid-wrap {
+    position: relative;
+    width: 100%;
+  }
+  .stroke-overlay {
+    position: absolute;
+    pointer-events: none;
+    z-index: 7;
+    opacity: 0;
+    transition: opacity 0.22s ease;
+    overflow: visible;
+  }
+  .stroke-overlay.show { opacity: 1; }
+  .stroke-overlay line {
+    stroke: var(--pencil);
+    stroke-linecap: round;
+    filter: drop-shadow(0 1px 0 rgba(255, 245, 200, 0.5));
   }
 
   .wordlist li.done {
@@ -844,7 +874,10 @@
 
         <div class="content">
           <div class="puzzle-wrap">
-            <div class="grid" id="grid"></div>
+            <div class="grid-wrap">
+              <div class="grid" id="grid"></div>
+              <svg class="stroke-overlay" id="strokeOverlay" xmlns="http://www.w3.org/2000/svg"></svg>
+            </div>
           </div>
 
           <aside class="wordlist">
@@ -1062,35 +1095,62 @@
     const soundBtn = document.getElementById('soundBtn');
     if (soundBtn) soundBtn.addEventListener('click', toggleSound);
 
-    // Hover on word list -> highlight matching cells in the puzzle
+    // Hover on word list -> draw marker line over found word
     const wordsEl = document.getElementById('words');
     if (wordsEl) {
-      const setHighlight = (word, on) => {
-        const list = foundCellMap.get(word);
-        if (!list) return;
-        list.forEach(c => c.classList.toggle('highlight', on));
-      };
       wordsEl.addEventListener('mouseover', (e) => {
         const li = e.target.closest('li');
         if (!li || !li.classList.contains('done')) return;
-        const word = li.id.replace(/^w-/, '');
-        setHighlight(word, true);
+        setWordEmphasis(li.id.replace(/^w-/, ''), true);
       });
       wordsEl.addEventListener('mouseout', (e) => {
         const li = e.target.closest('li');
         if (!li) return;
-        const word = li.id.replace(/^w-/, '');
-        setHighlight(word, false);
+        setWordEmphasis(li.id.replace(/^w-/, ''), false);
       });
-      // Touch / focus support: tap to flash highlight briefly
       wordsEl.addEventListener('click', (e) => {
         const li = e.target.closest('li');
         if (!li || !li.classList.contains('done')) return;
         const word = li.id.replace(/^w-/, '');
-        setHighlight(word, true);
-        setTimeout(() => setHighlight(word, false), 1100);
+        setWordEmphasis(word, true);
+        setTimeout(() => setWordEmphasis(word, false), 1300);
       });
     }
+  }
+
+  function setWordEmphasis(word, on) {
+    const list = foundCellMap.get(word);
+    if (!list || list.length < 2) return;
+    list.forEach(c => c.classList.toggle('highlight', on));
+    const overlay = document.getElementById('strokeOverlay');
+    if (!overlay) return;
+    if (!on) {
+      overlay.classList.remove('show');
+      return;
+    }
+    const grid = document.getElementById('grid');
+    const wrap = overlay.parentElement;
+    if (!grid || !wrap) return;
+    // Position the SVG to exactly cover the grid (regardless of any layout offset)
+    const gridRect = grid.getBoundingClientRect();
+    const wrapRect = wrap.getBoundingClientRect();
+    overlay.style.left   = (gridRect.left - wrapRect.left) + 'px';
+    overlay.style.top    = (gridRect.top  - wrapRect.top)  + 'px';
+    overlay.style.width  = gridRect.width  + 'px';
+    overlay.style.height = gridRect.height + 'px';
+    // Use row/col coords for pixel-perfect cell centers
+    const cellW = gridRect.width  / SIZE;
+    const cellH = gridRect.height / SIZE;
+    const r1 = +list[0].dataset.row, c1 = +list[0].dataset.col;
+    const r2 = +list[list.length - 1].dataset.row, c2 = +list[list.length - 1].dataset.col;
+    const x1 = (c1 + 0.5) * cellW;
+    const y1 = (r1 + 0.5) * cellH;
+    const x2 = (c2 + 0.5) * cellW;
+    const y2 = (r2 + 0.5) * cellH;
+    const sw = Math.max(2.2, cellW * 0.11);
+    overlay.setAttribute('viewBox', `0 0 ${gridRect.width} ${gridRect.height}`);
+    overlay.innerHTML = `<line x1="${x1}" y1="${y1}" x2="${x2}" y2="${y2}" stroke-width="${sw}"/>`;
+    overlay.classList.add('show');
   }
 
   function resetPuzzle() {
