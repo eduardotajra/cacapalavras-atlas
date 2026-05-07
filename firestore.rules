@@ -15,7 +15,7 @@ service cloud.firestore {
       allow create: if request.auth != null
         && request.resource.data.uid == request.auth.uid
         && scoreId == request.auth.uid + '_' + request.resource.data.dayKey
-        && request.resource.data.dayKey in ['04-05', '05-05', '06-05']
+        && request.resource.data.dayKey in ['04-05', '05-05', '06-05', '07-05']
         && request.resource.data.bestTimeMs is number
         && request.resource.data.bestTimeMs > 1000
         && request.resource.data.bestTimeMs < 7200000
