@@ -687,6 +687,24 @@
     mix-blend-mode: normal;
   }
 
+  /* Discrete artist credit below the day's image */
+  .art-credit {
+    display: block;
+    font-family: 'Special Elite', monospace;
+    font-size: 11px;
+    letter-spacing: 0.16em;
+    text-transform: uppercase;
+    color: var(--ink-soft);
+    opacity: 0.7;
+    margin-top: 6px;
+  }
+  .art-credit b {
+    font-weight: normal;
+    color: var(--accent-deep);
+    border-bottom: 1px dashed currentColor;
+    padding-bottom: 1px;
+  }
+
   /* === Page swap fade === */
   .day-page {
     animation: fadeIn 0.34s ease;
@@ -1774,12 +1792,14 @@
         ${day.key === '07-05' ? `
           <div class="day-avatar emos-avatar">
             <img class="emos-logo ceu-logo" src="Ceu_titulo.png" alt="Região do Céu">
+            <span class="art-credit">arte por <b>Kloudy</b></span>
           </div>
         ` : ''}
 
         ${day.key === '08-05' ? `
           <div class="day-avatar emos-avatar">
             <img class="emos-logo deserto-logo" src="deserto.png" alt="Região do Deserto">
+            <span class="art-credit">arte por <b>Dante</b></span>
           </div>
         ` : ''}
 
