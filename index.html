@@ -1349,6 +1349,19 @@
   }
   .termo-toggle input:checked + .termo-toggle-mark { background: var(--accent); }
   .termo-toggle input:checked + .termo-toggle-mark::after { transform: translateX(16px); }
+  .termo-toggle.locked {
+    opacity: 0.55;
+    cursor: not-allowed;
+  }
+  .termo-toggle.locked .termo-toggle-mark {
+    cursor: not-allowed;
+  }
+  .termo-toggle.locked .termo-toggle-label::after {
+    content: ' · TRAVADO';
+    font-size: 10px;
+    letter-spacing: 0.16em;
+    color: var(--accent);
+  }
 
   /* Day navigation + title */
   .termo-edition {
@@ -3554,6 +3567,7 @@
     termoUpdateAttemptsLabel();
     termoRefreshKeyboard();
     termoUpdateResultCard();
+    termoUpdateHardCheckState();
   }
 
   // Convenience: init com hoje, solo, hard mode salvo
@@ -3877,6 +3891,7 @@
 
     termoSaveSession();
     termoUpdateAttemptsLabel();
+    termoUpdateHardCheckState(); // após primeira tentativa, trava o toggle
     // Após todas as flips terminarem, refresh keyboard e card.
     // Não chamamos termoRefreshBoard() aqui pra não sobrescrever as cores
     // que já foram aplicadas durante a animação.
@@ -4343,16 +4358,39 @@
   });
 
   // Hard mode toggle
+  // Verifica se já existe progresso em QUALQUER variante (normal ou difícil)
+  // pra esse dia+modo — assim impede de jogar normal, descobrir a palavra,
+  // e depois "vencer no difícil" trivialmente.
+  function termoAnyVariantPlayed() {
+    const state = loadTermoState();
+    const baseKey = termoSession.mode + '|' + termoSession.dateKey;
+    const normalS = state.sessions && state.sessions[baseKey];
+    const hardS = state.sessions && state.sessions[baseKey + '|H'];
+    const normalPlayed = !!(normalS && normalS.guesses && normalS.guesses.length > 0);
+    const hardPlayed = !!(hardS && hardS.guesses && hardS.guesses.length > 0);
+    const currentPlayed = termoSession.guesses.length > 0;
+    return normalPlayed || hardPlayed || currentPlayed;
+  }
+
+  function termoUpdateHardCheckState() {
+    const cb = document.getElementById('termoHardCheck');
+    if (!cb) return;
+    const locked = termoAnyVariantPlayed();
+    cb.disabled = locked;
+    const label = cb.closest('.termo-toggle');
+    if (label) label.classList.toggle('locked', locked);
+  }
+
   document.getElementById('termoHardCheck')?.addEventListener('change', (e) => {
     const checked = e.target.checked;
-    // Só permite mudar antes da primeira tentativa (regra clássica)
-    if (termoSession.guesses.length > 0 && !termoSession.done) {
+    if (termoAnyVariantPlayed()) {
       e.target.checked = !checked;
-      showToast('Modo difícil', 'Só dá pra ativar/desativar antes da primeira tentativa.', { duration: 2500 });
+      showToast('Modo difícil', 'Você já jogou esse dia. O modo difícil só pode ser ativado antes da primeira tentativa.', { duration: 3000 });
       return;
     }
     termoLoadSession(termoSession.dateKey, termoSession.mode, checked);
     termoSaveSession();
+    termoMaybeAutoShowHelp();
   });
 
   // Ranking modal tabs
