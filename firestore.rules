@@ -15,7 +15,8 @@ service cloud.firestore {
       allow create: if request.auth != null
         && request.resource.data.uid == request.auth.uid
         && scoreId == request.auth.uid + '_' + request.resource.data.dayKey
-        && request.resource.data.dayKey in ['04-05', '05-05', '06-05', '07-05', '08-05', '09-05', '10-05']
+        && request.resource.data.dayKey is string
+        && request.resource.data.dayKey.matches('^[0-9]{2}-[0-9]{2}$')
         && request.resource.data.bestTimeMs is number
         && request.resource.data.bestTimeMs > 1000
         && request.resource.data.bestTimeMs < 7200000
@@ -37,6 +38,50 @@ service cloud.firestore {
             && request.resource.data.bestTimeMs > 1000
             && request.resource.data.uid == resource.data.uid
             && request.resource.data.dayKey == resource.data.dayKey)
+        )
+        && request.resource.data.nick is string
+        && request.resource.data.nick.size() >= 1
+        && request.resource.data.nick.size() <= 24;
+
+      allow delete: if false;
+    }
+
+    // /termo-scores/{uid_dateKey_mode[_H]} — ranking público da Palavra do Dia
+    match /termo-scores/{scoreId} {
+      allow read: if true;
+
+      allow create: if request.auth != null
+        && request.resource.data.uid == request.auth.uid
+        && scoreId.matches(request.auth.uid + '_[0-9]{4}-[0-9]{2}-[0-9]{2}_(solo|dueto|quarteto)(_H)?')
+        && request.resource.data.mode in ['solo', 'dueto', 'quarteto']
+        && request.resource.data.hardMode is bool
+        && request.resource.data.attempts is int
+        && request.resource.data.attempts > 0
+        && request.resource.data.attempts <= 9
+        && request.resource.data.durationMs is int
+        && request.resource.data.durationMs >= 0
+        && request.resource.data.durationMs <= 21600000  // <= 6h
+        && request.resource.data.nick is string
+        && request.resource.data.nick.size() >= 1
+        && request.resource.data.nick.size() <= 24
+        && request.resource.data.dateKey is string;
+
+      allow update: if request.auth != null
+        && resource.data.uid == request.auth.uid
+        && request.resource.data.uid == resource.data.uid
+        && request.resource.data.dateKey == resource.data.dateKey
+        && request.resource.data.mode == resource.data.mode
+        && (
+          request.resource.data.diff(resource.data).affectedKeys()
+            .hasOnly(['nick', 'updatedAt'])
+          ||
+          (request.resource.data.attempts is int
+            && request.resource.data.durationMs is int
+            && (
+              request.resource.data.attempts < resource.data.attempts
+              || (request.resource.data.attempts == resource.data.attempts
+                && request.resource.data.durationMs < resource.data.durationMs)
+            ))
         )
         && request.resource.data.nick is string
         && request.resource.data.nick.size() >= 1

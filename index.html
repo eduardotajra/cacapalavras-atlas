@@ -97,6 +97,61 @@
     --pencil:         rgba(43, 19, 56, 0.9);
   }
 
+  /* Help modal — conteúdo */
+  .help-intro {
+    font-family: 'Crimson Text', serif;
+    font-size: 16px;
+    line-height: 1.55;
+    color: var(--ink);
+    margin: 4px 0 12px;
+  }
+  .help-tip {
+    font-family: 'Crimson Text', serif;
+    font-size: 14px;
+    color: var(--ink-soft);
+    font-style: italic;
+    margin: 0 0 14px;
+  }
+  .help-rules {
+    list-style: none;
+    padding: 0;
+    margin: 0 0 12px;
+  }
+  .help-rules li {
+    font-family: 'Crimson Text', serif;
+    font-size: 15px;
+    line-height: 1.6;
+    color: var(--ink);
+    padding: 4px 0 4px 18px;
+    position: relative;
+  }
+  .help-rules li::before {
+    content: '·';
+    position: absolute;
+    left: 4px;
+    color: var(--accent);
+    font-weight: 700;
+  }
+  .help-hard {
+    font-family: 'Special Elite', monospace;
+    font-size: 13px;
+    color: var(--accent-deep);
+    padding: 10px 12px;
+    border: 1px dashed var(--accent);
+    background: rgba(126, 20, 25, 0.06);
+    letter-spacing: 0.04em;
+    margin-top: 8px;
+  }
+
+  /* Termo section has its own palette — independent of caça-palavras day. */
+  /* Specificity matches body[data-active="X-X"]; source order makes this win. */
+  body[data-section="termo"] {
+    --accent:      #2a4e6b;
+    --accent-deep: #14283a;
+    --paper-base:  #e3d4b3;
+    --paper-mid:   #d3c098;
+  }
+
   * { box-sizing: border-box; margin: 0; padding: 0; }
 
   html, body {
@@ -221,15 +276,55 @@
   }
 
   /* === Day tabs (date navigation) === */
-  .day-tabs {
+  .day-tabs-wrapper {
     display: flex;
-    flex-wrap: wrap;
-    justify-content: center;
-    gap: 8px;
+    align-items: center;
+    gap: 6px;
     margin: 22px auto 0;
     padding-bottom: 16px;
     border-bottom: 1px dashed rgba(28,21,14,0.4);
   }
+  .day-tabs {
+    flex: 1;
+    display: flex;
+    flex-wrap: nowrap;
+    overflow-x: auto;
+    scroll-behavior: smooth;
+    scrollbar-width: none;
+    -ms-overflow-style: none;
+    gap: 8px;
+    padding: 2px 4px;
+    justify-content: flex-start;
+  }
+  .day-tabs::-webkit-scrollbar { display: none; }
+  .day-scroll-btn {
+    flex: 0 0 auto;
+    background: transparent;
+    border: 1.5px solid var(--ink);
+    width: 28px; height: 32px;
+    font-family: 'Bowlby One', cursive;
+    font-size: 16px;
+    color: var(--ink);
+    cursor: pointer;
+    padding: 0;
+    transition: all 0.15s;
+  }
+  .day-scroll-btn:hover { background: var(--ink); color: var(--paper-base); }
+  .day-tabs-wrapper .day-archive-btn {
+    flex: 0 0 auto;
+    background: transparent;
+    border: 1.5px solid var(--ink);
+    padding: 6px 12px 4px;
+    font-family: 'Special Elite', monospace;
+    font-size: 12px;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: var(--ink);
+    cursor: pointer;
+    transition: all 0.15s;
+  }
+  .day-tabs-wrapper .day-archive-btn:hover { background: var(--ink); color: var(--paper-base); }
+  .day-tabs .tab { flex: 0 0 auto; }
   .day-tabs .tab {
     font-family: 'Special Elite', monospace;
     font-size: clamp(13px, 1.4vw, 16px);
@@ -1076,6 +1171,628 @@
     .rank-table td, .rank-table th { font-size: 14px; padding: 6px; }
   }
 
+  /* === Section switcher (Cadernos: Caça-Palavras / Palavra do Dia) === */
+  .section-switcher {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+    margin: 18px auto 0;
+    padding-bottom: 14px;
+    border-bottom: 2px solid var(--ink);
+  }
+  .section-label {
+    font-family: 'Special Elite', monospace;
+    font-size: 12px;
+    letter-spacing: 0.20em;
+    text-transform: uppercase;
+    color: var(--ink-soft);
+    border-right: 1px dashed var(--ink-soft);
+    padding-right: 12px;
+  }
+  .section-btn {
+    font-family: 'Bowlby One', cursive;
+    font-size: clamp(14px, 1.6vw, 18px);
+    letter-spacing: 0.04em;
+    padding: 8px 18px 6px;
+    background: rgba(255, 240, 210, 0.4);
+    border: 2px solid var(--ink);
+    color: var(--ink);
+    cursor: pointer;
+    text-transform: uppercase;
+    transition: all 0.15s;
+  }
+  .section-btn:hover { background: rgba(126, 20, 25, 0.08); }
+  .section-btn.active {
+    background: var(--ink);
+    color: var(--paper-base);
+    box-shadow: 3px 3px 0 var(--accent);
+  }
+
+  /* Show/hide sections based on data-section attribute */
+  .termo-section { display: none; }
+  body[data-section="termo"] .caca-section { display: none; }
+  body[data-section="termo"] .termo-section { display: block; }
+  body[data-section="termo"] .auth-status { /* keep visible for both */ }
+  /* When in termo, day-tabs irrelevant */
+  body[data-section="termo"] .day-tabs { display: none; }
+
+  /* === Termo (Palavra do Dia) === */
+  .termo-page {
+    animation: fadeIn 0.34s ease;
+    --termo-correct: #4f7a3e;
+    --termo-correct-dark: #2c4922;
+    --termo-present: #b78a1a;
+    --termo-present-dark: #6a4f0c;
+    --termo-absent: #5a5045;
+    --termo-absent-dark: #2e2a25;
+  }
+  /* Fallback CSS vars at the section level so hints work outside .termo-page */
+  body[data-section="termo"] {
+    --termo-correct: #4f7a3e;
+    --termo-correct-dark: #2c4922;
+    --termo-present: #b78a1a;
+    --termo-present-dark: #6a4f0c;
+    --termo-absent: #5a5045;
+    --termo-absent-dark: #2e2a25;
+  }
+  .hint-correct { color: #4f7a3e !important; }
+  .hint-present { color: #b78a1a !important; }
+  .hint-absent  { color: #5a5045 !important; }
+
+  /* Inline icons (small SVGs, follow currentColor) */
+  .icn {
+    display: inline-block;
+    width: 1em; height: 1em;
+    vertical-align: -0.12em;
+    fill: none;
+    stroke: currentColor;
+    stroke-width: 1.7;
+    stroke-linecap: round;
+    stroke-linejoin: round;
+  }
+
+  /* Top controls strip */
+  .termo-controls {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    margin: 16px 0 8px;
+    padding-bottom: 12px;
+    border-bottom: 1px dashed var(--ink-soft);
+  }
+  .termo-mode-tabs {
+    display: flex;
+    gap: 4px;
+  }
+  .termo-mode-tab {
+    background: rgba(255, 240, 210, 0.5);
+    border: 1.5px solid var(--ink);
+    padding: 6px 14px 5px;
+    font-family: 'Special Elite', monospace;
+    font-size: 12px;
+    letter-spacing: 0.12em;
+    color: var(--ink);
+    cursor: pointer;
+    text-transform: uppercase;
+    transition: all 0.15s;
+  }
+  .termo-mode-tab:hover { background: rgba(28, 21, 14, 0.10); }
+  .termo-mode-tab.active {
+    background: var(--ink);
+    color: var(--paper-base);
+    box-shadow: 2px 2px 0 var(--accent);
+  }
+  .termo-toggle {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    cursor: pointer;
+    font-family: 'Special Elite', monospace;
+    font-size: 12px;
+    letter-spacing: 0.12em;
+    color: var(--ink);
+    text-transform: uppercase;
+    user-select: none;
+  }
+  .termo-toggle input { display: none; }
+  .termo-toggle-mark {
+    width: 38px; height: 20px;
+    background: rgba(28, 21, 14, 0.15);
+    border: 1.5px solid var(--ink);
+    position: relative;
+    display: inline-block;
+    transition: background 0.15s;
+  }
+  .termo-toggle-mark::after {
+    content: '';
+    position: absolute;
+    top: 1px; left: 1px;
+    width: 14px; height: 14px;
+    background: var(--paper-base);
+    border: 1.5px solid var(--ink);
+    transition: transform 0.18s ease;
+  }
+  .termo-toggle input:checked + .termo-toggle-mark { background: var(--accent); }
+  .termo-toggle input:checked + .termo-toggle-mark::after { transform: translateX(16px); }
+
+  /* Day navigation + title */
+  .termo-edition {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+    flex-wrap: wrap;
+    margin: 12px 0 8px;
+  }
+  .termo-edition .edition-label {
+    font-family: 'Bowlby One', cursive;
+    font-size: clamp(15px, 2.4vw, 26px);
+    letter-spacing: 0.08em;
+    border: 2px solid var(--ink);
+    padding: 4px 14px 2px;
+    background: rgba(255, 240, 210, 0.4);
+    text-align: center;
+  }
+  .day-nav-btn {
+    background: transparent;
+    border: 1.5px solid var(--ink);
+    width: 32px; height: 32px;
+    padding: 0;
+    font-family: 'Bowlby One', cursive;
+    font-size: 18px;
+    color: var(--ink);
+    cursor: pointer;
+    transition: all 0.15s;
+  }
+  .day-nav-btn:hover:not(:disabled) { background: var(--ink); color: var(--paper-base); }
+  .day-nav-btn:disabled { opacity: 0.35; cursor: not-allowed; }
+  .day-archive-btn {
+    background: transparent;
+    border: 1.5px solid var(--ink);
+    padding: 5px 12px 3px;
+    font-family: 'Special Elite', monospace;
+    font-size: 12px;
+    letter-spacing: 0.12em;
+    color: var(--ink);
+    cursor: pointer;
+    transition: all 0.15s;
+    text-transform: uppercase;
+  }
+  .day-archive-btn:hover { background: var(--ink); color: var(--paper-base); }
+
+  /* Archive list */
+  .termo-archive-list {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(110px, 1fr));
+    gap: 8px;
+    margin-top: 12px;
+    max-height: 50vh;
+    overflow-y: auto;
+    padding: 4px;
+  }
+  .archive-item {
+    background: rgba(255, 240, 210, 0.5);
+    border: 1.5px solid var(--ink);
+    padding: 8px 8px 6px;
+    cursor: pointer;
+    font-family: 'Special Elite', monospace;
+    font-size: 13px;
+    color: var(--ink);
+    text-align: center;
+    transition: all 0.15s;
+  }
+  .archive-item:hover { background: rgba(28, 21, 14, 0.10); }
+  .archive-item.today { box-shadow: 2px 2px 0 var(--accent); border-color: var(--accent); }
+  .archive-item.won {
+    background: var(--termo-correct, #4f7a3e);
+    color: #fff8e0;
+    border-color: var(--termo-correct-dark, #2c4922);
+  }
+  .archive-item.lost {
+    background: var(--termo-absent, #5a5045);
+    color: #ddd;
+    border-color: var(--termo-absent-dark, #2e2a25);
+  }
+  .archive-item.locked { opacity: 0.4; cursor: not-allowed; }
+
+  /* Caça-Palavras archive list */
+  .caca-archive-list {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    margin-top: 12px;
+    max-height: 60vh;
+    overflow-y: auto;
+    padding: 4px;
+  }
+  .caca-archive-item {
+    background: rgba(255, 240, 210, 0.5);
+    border: 1.5px solid var(--ink);
+    padding: 10px 14px;
+    cursor: pointer;
+    text-align: left;
+    transition: all 0.15s;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+  }
+  .caca-archive-item:hover { background: rgba(28, 21, 14, 0.10); }
+  .caca-archive-item.active { box-shadow: 3px 3px 0 var(--accent); border-color: var(--accent); }
+  .caca-archive-item .cai-date {
+    font-family: 'Bowlby One', cursive;
+    font-size: 18px;
+    color: var(--ink);
+    letter-spacing: 0.04em;
+    min-width: 64px;
+  }
+  .caca-archive-item .cai-info {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+  }
+  .caca-archive-item .cai-subtitle {
+    font-family: 'Special Elite', monospace;
+    font-size: 11px;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    color: var(--ink-soft);
+  }
+  .caca-archive-item .cai-words {
+    font-family: 'Crimson Text', serif;
+    font-size: 13px;
+    color: var(--ink);
+    font-style: italic;
+  }
+  .archive-item .ai-date {
+    display: block;
+    font-family: 'Bowlby One', cursive;
+    font-size: 16px;
+    letter-spacing: 0.05em;
+  }
+  .archive-item .ai-status {
+    display: block;
+    font-size: 10px;
+    letter-spacing: 0.14em;
+    margin-top: 2px;
+    text-transform: uppercase;
+  }
+
+  /* Board container: supports 1/2/4 boards */
+  .termo-board {
+    display: grid;
+    gap: 14px;
+    margin: 18px auto 12px;
+    justify-content: center;
+    align-items: start;
+  }
+  body[data-termo-mode="solo"] .termo-board { grid-template-columns: 1fr; }
+  body[data-termo-mode="dueto"] .termo-board {
+    grid-template-columns: repeat(2, minmax(0, 260px));
+    max-width: 600px;
+  }
+  body[data-termo-mode="quarteto"] .termo-board {
+    grid-template-columns: repeat(4, minmax(0, 220px));
+    max-width: 1000px;
+  }
+  /* Tablet: dueto stays 2-col, quarteto goes 2x2 */
+  @media (max-width: 1000px) {
+    body[data-termo-mode="quarteto"] .termo-board {
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      max-width: 540px;
+    }
+  }
+  /* Mobile: all stack */
+  @media (max-width: 540px) {
+    body[data-termo-mode="dueto"] .termo-board,
+    body[data-termo-mode="quarteto"] .termo-board {
+      grid-template-columns: 1fr;
+    }
+  }
+
+  .termo-subboard {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 6px;
+    position: relative;
+  }
+  .termo-subboard.won {
+    opacity: 0.55;
+    filter: saturate(0.7);
+    transition: opacity 0.3s ease;
+  }
+  .termo-grid {
+    display: grid;
+    grid-template-columns: repeat(var(--word-length, 5), minmax(0, 1fr));
+    gap: 5px;
+    width: 100%;
+    max-width: calc(var(--word-length, 5) * 56px);
+  }
+  body[data-termo-mode="solo"] .termo-grid {
+    max-width: calc(var(--word-length, 5) * 64px);
+    gap: 7px;
+  }
+  body[data-termo-mode="dueto"] .termo-grid {
+    max-width: calc(var(--word-length, 5) * 48px);
+  }
+  body[data-termo-mode="quarteto"] .termo-grid {
+    max-width: calc(var(--word-length, 5) * 42px);
+    gap: 4px;
+  }
+  /* Cells: quadradas perfeitas via aspect-ratio.
+     Como todas as células de um grid têm a mesma largura (cols 1fr),
+     todas terão a mesma altura, e a altura total do grid será uniforme. */
+  body[data-section="termo"] .termo-cell {
+    aspect-ratio: 1;
+  }
+  .termo-cell {
+    aspect-ratio: 1;
+    min-width: 0;
+    min-height: 0;
+    overflow: hidden;
+    background: rgba(255, 240, 210, 0.45);
+    /* Sem border CSS — usamos box-shadow inset pra moldura,
+       assim a borda nunca afeta as dimensões nem aparece "mais grossa"
+       em uns estados que em outros. Tamanho da célula sempre igual. */
+    border: none;
+    box-shadow: inset 0 0 0 2px rgba(28, 21, 14, 0.55);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-family: 'Bowlby One', cursive;
+    font-size: clamp(16px, 4vw, 28px);
+    line-height: 1;
+    color: var(--ink);
+    text-transform: uppercase;
+    cursor: pointer;
+    user-select: none;
+    -webkit-user-select: none;
+    transition: box-shadow 0.15s ease;
+    perspective: 600px;
+    position: relative;
+  }
+  .termo-cell.filled { box-shadow: inset 0 0 0 2px var(--ink); }
+  .termo-cell.selected {
+    box-shadow: inset 0 0 0 3px var(--accent);
+  }
+  .termo-cell.correct {
+    background: var(--termo-correct); color: #fff8e0;
+    box-shadow: inset 0 0 0 2px var(--termo-correct-dark);
+  }
+  .termo-cell.present {
+    background: var(--termo-present); color: #fff8e0;
+    box-shadow: inset 0 0 0 2px var(--termo-present-dark);
+  }
+  .termo-cell.absent  {
+    background: var(--termo-absent);  color: #e8dfd0;
+    box-shadow: inset 0 0 0 2px var(--termo-absent-dark);
+  }
+
+  @keyframes termoFlip {
+    0%   { transform: rotateX(0deg); }
+    50%  { transform: rotateX(90deg); }
+    100% { transform: rotateX(0deg); }
+  }
+  .termo-cell.revealing { animation: termoFlip 0.6s ease forwards; }
+
+  @keyframes termoShake {
+    0%, 100% { transform: translateX(0); }
+    20%, 60% { transform: translateX(-6px); }
+    40%, 80% { transform: translateX(6px); }
+  }
+  .termo-row.shake .termo-cell { animation: termoShake 0.4s ease; }
+
+  @keyframes termoBounce {
+    0%, 100% { transform: translateY(0); }
+    50% { transform: translateY(-14px); }
+  }
+  .termo-cell.bounce { animation: termoBounce 0.5s ease; }
+
+  .termo-keyboard {
+    margin: 14px auto 8px;
+    max-width: 540px;
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    padding: 0 6px;
+  }
+  .termo-keyboard-row {
+    display: flex;
+    justify-content: center;
+    gap: 4px;
+  }
+  .termo-key {
+    flex: 1;
+    min-width: 24px;
+    height: 48px;
+    background: rgba(255, 240, 210, 0.5);
+    border: 1.5px solid var(--ink);
+    font-family: 'Special Elite', monospace;
+    font-size: 14px;
+    color: var(--ink);
+    text-transform: uppercase;
+    cursor: pointer;
+    transition: all 0.15s;
+    padding: 0;
+    position: relative;
+    overflow: hidden;
+    isolation: isolate;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+  .termo-key.wide { flex: 1.6; font-size: 11px; letter-spacing: 0.06em; padding: 0 4px; }
+  .termo-key:hover { background: rgba(28, 21, 14, 0.10); }
+  .key-segments {
+    position: absolute;
+    inset: 0;
+    z-index: 0;
+    display: grid;
+    pointer-events: none;
+  }
+  body[data-termo-mode="solo"] .key-segments { grid-template-columns: 1fr; grid-template-rows: 1fr; }
+  body[data-termo-mode="dueto"] .key-segments { grid-template-columns: 1fr; grid-template-rows: 1fr 1fr; }
+  body[data-termo-mode="quarteto"] .key-segments { grid-template-columns: 1fr 1fr; grid-template-rows: 1fr 1fr; }
+  .key-seg { display: block; background: transparent; transition: background 0.18s ease; }
+  .key-seg.correct { background: var(--termo-correct); }
+  .key-seg.present { background: var(--termo-present); }
+  .key-seg.absent  { background: var(--termo-absent); }
+  .key-text {
+    position: relative;
+    z-index: 1;
+    pointer-events: none;
+    font-family: inherit;
+    font-size: inherit;
+    text-transform: inherit;
+  }
+  /* Texto fica claro quando há cor de fundo (pra contraste) */
+  .termo-key.has-color .key-text {
+    color: #fff8e0;
+    text-shadow: 1px 1px 0 rgba(0, 0, 0, 0.35);
+  }
+  /* Todas as segments absent: tecla fica esmaecida */
+  .termo-key.all-absent {
+    opacity: 0.55;
+  }
+  .termo-key.all-absent .key-text {
+    color: #fff8e0;
+  }
+
+  .termo-meta {
+    text-align: center;
+    margin-top: 14px;
+    font-family: 'Special Elite', monospace;
+    font-size: 13px;
+    letter-spacing: 0.1em;
+    color: var(--ink-soft);
+  }
+  .termo-meta b { color: var(--accent); }
+  .termo-meta .term-controls {
+    display: inline-flex;
+    gap: 8px;
+    margin-left: 10px;
+  }
+
+  /* End-game card */
+  .termo-result {
+    margin: 24px auto;
+    max-width: 480px;
+    padding: 22px 24px;
+    background: var(--paper-base);
+    border: 2px solid var(--ink);
+    box-shadow: 4px 4px 0 var(--accent);
+    text-align: center;
+    position: relative;
+  }
+  .termo-result::before {
+    content: 'ATUALIZAÇÃO';
+    position: absolute;
+    top: -12px; left: 50%;
+    transform: translateX(-50%);
+    background: var(--accent);
+    color: #fff8e0;
+    font-family: 'Bowlby One', cursive;
+    font-size: 12px;
+    letter-spacing: 0.18em;
+    padding: 4px 14px 2px;
+    border: 1.5px solid var(--ink);
+  }
+  .termo-result h3 {
+    font-family: 'Bowlby One', cursive;
+    font-size: 22px;
+    color: var(--ink);
+    margin: 8px 0 6px;
+    letter-spacing: 0.04em;
+  }
+  .termo-result .word-reveal {
+    display: inline-block;
+    font-family: 'Bowlby One', cursive;
+    font-size: 28px;
+    color: var(--accent);
+    letter-spacing: 0.12em;
+    margin: 6px 0 12px;
+    border-bottom: 3px solid var(--accent);
+    padding: 0 10px 4px;
+  }
+  .termo-result p {
+    font-family: 'Crimson Text', serif;
+    font-size: 15px;
+    color: var(--ink-soft);
+    margin: 0 0 14px;
+  }
+  .termo-result .next-time {
+    font-family: 'Special Elite', monospace;
+    font-size: 12px;
+    color: var(--ink-soft);
+    letter-spacing: 0.14em;
+    margin-top: 10px;
+    text-transform: uppercase;
+  }
+  .termo-result .actions { display: flex; gap: 8px; justify-content: center; margin-top: 6px; flex-wrap: wrap; }
+
+  /* Stats modal */
+  .termo-stats { max-width: 460px; }
+  .stats-grid {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 10px;
+    margin: 12px 0 20px;
+  }
+  .stat-box {
+    text-align: center;
+    padding: 8px 4px;
+    border: 1px dashed var(--ink-soft);
+    background: rgba(255, 240, 210, 0.4);
+  }
+  .stat-num {
+    font-family: 'Bowlby One', cursive;
+    font-size: 26px;
+    color: var(--accent-deep);
+    display: block;
+  }
+  .stat-lbl {
+    font-family: 'Special Elite', monospace;
+    font-size: 10px;
+    letter-spacing: 0.14em;
+    color: var(--ink-soft);
+    text-transform: uppercase;
+    display: block;
+    margin-top: 4px;
+  }
+  .stats-distribution { margin-top: 10px; }
+  .stats-distribution h4 {
+    font-family: 'Bowlby One', cursive;
+    font-size: 14px;
+    letter-spacing: 0.08em;
+    color: var(--ink);
+    text-transform: uppercase;
+    margin-bottom: 8px;
+  }
+  .dist-row {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin-bottom: 4px;
+    font-family: 'Special Elite', monospace;
+    font-size: 13px;
+  }
+  .dist-row .lbl { width: 16px; color: var(--ink); }
+  .dist-row .bar {
+    flex: 1;
+    background: var(--ink);
+    color: #fff8e0;
+    text-align: right;
+    padding: 3px 8px 2px;
+    min-width: 18px;
+    transition: width 0.6s ease;
+  }
+  .dist-row.recent .bar { background: var(--accent); }
+
   /* === Custom toast (replaces alert) === */
   .toast {
     position: fixed;
@@ -1429,6 +2146,50 @@
       const ref = doc(db, 'scores', uid + '_' + dayKey);
       const snap = await getDoc(ref);
       return snap.exists() ? snap.data() : null;
+    },
+
+    // === Termo (Palavra do Dia) cloud ranking ===
+    async submitTermoScore(uid, nick, dateKey, mode, hardMode, attempts, durationMs) {
+      const docId = uid + '_' + dateKey + '_' + mode + (hardMode ? '_H' : '');
+      const ref = doc(db, 'termo-scores', docId);
+      const existing = await getDoc(ref);
+      const data = {
+        uid, nick, dateKey, mode,
+        hardMode: !!hardMode,
+        attempts: attempts | 0,
+        durationMs: Math.max(0, durationMs | 0),
+        updatedAt: serverTimestamp()
+      };
+      if (existing.exists()) {
+        const cur = existing.data();
+        // Só atualiza se for melhor (menos tentativas, ou tempo menor em empate)
+        const better = data.attempts < cur.attempts
+          || (data.attempts === cur.attempts && data.durationMs < cur.durationMs);
+        if (better) {
+          await setDoc(ref, data, { merge: true });
+          return { improved: true };
+        }
+        await setDoc(ref, { nick, updatedAt: serverTimestamp() }, { merge: true });
+        return { improved: false };
+      }
+      data.completedAt = serverTimestamp();
+      await setDoc(ref, data);
+      return { improved: true, firstTime: true };
+    },
+
+    async getTermoRanking(dateKey, mode, hardMode, rankMode, count) {
+      // rankMode: 'speed' | 'attempts'
+      const orderField = rankMode === 'speed' ? 'durationMs' : 'attempts';
+      const constraints = [
+        where('dateKey', '==', dateKey),
+        where('mode', '==', mode),
+        where('hardMode', '==', !!hardMode),
+        orderBy(orderField, 'asc'),
+        limit(count || 25)
+      ];
+      const q = query(collection(db, 'termo-scores'), ...constraints);
+      const snap = await getDocs(q);
+      return snap.docs.map((d, i) => Object.assign({ rank: i + 1 }, d.data()));
     }
   };
 
@@ -1455,24 +2216,156 @@
     <div class="byline">DOS MORADORES, PARA OS MORADORES</div>
   </header>
 
-  <nav class="day-tabs" id="dayTabs">
-    <button class="tab active" data-day="04-05"><span class="dot"></span>04/05</button>
-    <button class="tab" data-day="05-05"><span class="dot"></span>05/05</button>
-    <button class="tab" data-day="06-05"><span class="dot"></span>06/05</button>
-    <button class="tab" data-day="07-05"><span class="dot"></span>07/05</button>
-    <button class="tab" data-day="08-05"><span class="dot"></span>08/05</button>
-    <button class="tab" data-day="09-05"><span class="dot"></span>09/05</button>
-    <button class="tab" data-day="10-05"><span class="dot"></span>10/05</button>
-    <button class="tab disabled" data-day="future" aria-disabled="true">Em breve</button>
-  </nav>
+  <div class="section-switcher" id="sectionSwitcher">
+    <span class="section-label">Cadernos:</span>
+    <button class="section-btn active" type="button" data-section="caca">Caça-Palavras</button>
+    <button class="section-btn" type="button" data-section="termo">Palavra do Dia</button>
+  </div>
 
   <div class="auth-status" id="authStatus">
     <button class="auth-btn" id="authOpenBtn" type="button">Entrar / Cadastrar</button>
   </div>
 
-  <main id="dayContent"></main>
+  <div class="caca-section">
+    <div class="day-tabs-wrapper">
+      <button class="day-scroll-btn" id="dayScrollLeft" type="button" aria-label="Edições anteriores">‹</button>
+      <nav class="day-tabs" id="dayTabs">
+        <button class="tab active" data-day="04-05"><span class="dot"></span>04/05</button>
+        <button class="tab" data-day="05-05"><span class="dot"></span>05/05</button>
+        <button class="tab" data-day="06-05"><span class="dot"></span>06/05</button>
+        <button class="tab" data-day="07-05"><span class="dot"></span>07/05</button>
+        <button class="tab" data-day="08-05"><span class="dot"></span>08/05</button>
+        <button class="tab" data-day="09-05"><span class="dot"></span>09/05</button>
+        <button class="tab" data-day="10-05"><span class="dot"></span>10/05</button>
+        <button class="tab disabled" data-day="future" aria-disabled="true">Em breve</button>
+      </nav>
+      <button class="day-scroll-btn" id="dayScrollRight" type="button" aria-label="Próximas edições">›</button>
+      <button class="day-archive-btn" id="cacaArchiveBtn" type="button" aria-label="Arquivo de edições">Arquivo</button>
+    </div>
 
-  <footer class="page-footer" id="dayFooter"></footer>
+    <main id="dayContent"></main>
+
+    <footer class="page-footer" id="dayFooter"></footer>
+  </div>
+
+  <section class="termo-section" id="termoSection">
+    <div class="termo-page">
+
+      <!-- Top controls strip: modes + hard mode toggle -->
+      <div class="termo-controls">
+        <div class="termo-mode-tabs" role="tablist" aria-label="Modo de jogo">
+          <button class="termo-mode-tab active" type="button" data-mode="solo" role="tab">Solo</button>
+          <button class="termo-mode-tab" type="button" data-mode="dueto" role="tab">Dueto</button>
+          <button class="termo-mode-tab" type="button" data-mode="quarteto" role="tab">Quarteto</button>
+        </div>
+        <label class="termo-toggle">
+          <input type="checkbox" id="termoHardCheck">
+          <span class="termo-toggle-mark"></span>
+          <span class="termo-toggle-label">Modo difícil</span>
+        </label>
+      </div>
+
+      <!-- Day navigation + title -->
+      <div class="termo-edition">
+        <button class="day-nav-btn" id="termoPrevDay" type="button" aria-label="Dia anterior">‹</button>
+        <span class="edition-label" id="termoLabel">PALAVRA DO DIA — 11/05</span>
+        <button class="day-nav-btn" id="termoNextDay" type="button" aria-label="Próximo dia">›</button>
+        <button class="day-archive-btn" id="termoArchiveBtn" type="button" aria-label="Arquivo">Arquivo</button>
+      </div>
+
+      <div class="termo-board" id="termoBoard"></div>
+
+      <div id="termoStatus"></div>
+
+      <div class="termo-keyboard" id="termoKeyboard"></div>
+
+      <div class="termo-meta">
+        <span id="termoAttempts">0/6</span>
+        <span class="term-controls">
+          <button class="ctrl-btn" id="termoStatsBtn" type="button">Estatísticas</button>
+          <button class="ctrl-btn" id="termoRankBtn" type="button">Ranking</button>
+          <button class="ctrl-btn" id="termoHelpBtn" type="button">Como jogar</button>
+        </span>
+      </div>
+    </div>
+
+    <footer class="page-footer">
+      Coluna diária do <b>JORNAL ATLAS</b>. Uma palavra nova a cada amanhecer.
+    </footer>
+  </section>
+</div>
+
+<!-- Termo: stats modal -->
+<div class="modal-backdrop" id="termoStatsBackdrop" aria-hidden="true">
+  <div class="modal-card termo-stats" role="dialog" aria-modal="true">
+    <button class="modal-close" data-close="termoStats" aria-label="Fechar">×</button>
+    <h2>Estatísticas</h2>
+    <p class="rank-day">Suas estatísticas no Termo</p>
+    <div class="stats-grid">
+      <div class="stat-box"><span class="stat-num" id="statPlayed">0</span><span class="stat-lbl">Jogos</span></div>
+      <div class="stat-box"><span class="stat-num" id="statWinPct">0</span><span class="stat-lbl">% Vitória</span></div>
+      <div class="stat-box"><span class="stat-num" id="statStreak">0</span><span class="stat-lbl">Streak</span></div>
+      <div class="stat-box"><span class="stat-num" id="statMaxStreak">0</span><span class="stat-lbl">Melhor</span></div>
+    </div>
+    <div class="stats-distribution" id="statsDistribution">
+      <h4>Distribuição de tentativas</h4>
+      <div id="distBars"></div>
+    </div>
+  </div>
+</div>
+
+<!-- Caça-Palavras: archive modal (todas as edições com tema) -->
+<div class="modal-backdrop" id="cacaArchiveBackdrop" aria-hidden="true">
+  <div class="modal-card termo-stats" role="dialog" aria-modal="true">
+    <button class="modal-close" data-close="cacaArchive" aria-label="Fechar">×</button>
+    <h2>Arquivo de Edições</h2>
+    <p class="rank-day">Todas as edições do caça-palavras</p>
+    <div id="cacaArchiveList" class="caca-archive-list"></div>
+  </div>
+</div>
+
+<!-- Termo: archive modal -->
+<div class="modal-backdrop" id="termoArchiveBackdrop" aria-hidden="true">
+  <div class="modal-card termo-stats" role="dialog" aria-modal="true">
+    <button class="modal-close" data-close="termoArchive" aria-label="Fechar">×</button>
+    <h2>Arquivo</h2>
+    <p class="rank-day">Todos os dias da Palavra do Dia</p>
+    <div id="termoArchiveList" class="termo-archive-list"></div>
+  </div>
+</div>
+
+<!-- Termo: ranking modal (reaproveita a estrutura do rankBackdrop por dia/modo) -->
+<div class="modal-backdrop" id="termoRankBackdrop" aria-hidden="true">
+  <div class="modal-card rank-modal" role="dialog" aria-modal="true">
+    <button class="modal-close" data-close="termoRank" aria-label="Fechar">×</button>
+    <h2>Ranking — Palavra do Dia</h2>
+    <p class="rank-day" id="termoRankDay">—</p>
+    <div class="modal-tabs">
+      <button class="modal-tab active" data-termo-rank="speed" type="button">Velocistas (tempo)</button>
+      <button class="modal-tab" data-termo-rank="attempts" type="button">Tentativas</button>
+    </div>
+    <div class="rank-loading" id="termoRankLoading" hidden>Carregando…</div>
+    <div class="rank-empty" id="termoRankEmpty" hidden>Ninguém aqui ainda. Seja o primeiro!</div>
+    <table class="rank-table" id="termoRankTable" hidden>
+      <thead>
+        <tr>
+          <th class="rank-col-pos">#</th>
+          <th class="rank-col-nick">Apelido</th>
+          <th class="rank-col-val" id="termoRankColVal">Tempo</th>
+        </tr>
+      </thead>
+      <tbody id="termoRankBody"></tbody>
+    </table>
+  </div>
+</div>
+
+<!-- Termo: help modal (content populated dynamically per mode) -->
+<div class="modal-backdrop" id="termoHelpBackdrop" aria-hidden="true">
+  <div class="modal-card termo-stats" role="dialog" aria-modal="true">
+    <button class="modal-close" data-close="termoHelp" aria-label="Fechar">×</button>
+    <h2 id="termoHelpTitle">Como jogar</h2>
+    <div id="termoHelpContent"></div>
+  </div>
 </div>
 
 <!-- Auth modal: signin + signup + forgot password -->
@@ -1890,7 +2783,7 @@
             <div class="controls">
               <button class="ctrl-btn" id="resetBtn">↻ Reiniciar</button>
               <button class="ctrl-btn" id="soundBtn">${soundEnabled ? '♪ Som' : '♪ Som'}</button>
-              <button class="ctrl-btn" id="rankBtn">🏆 Ranking</button>
+              <button class="ctrl-btn" id="rankBtn">Ranking</button>
             </div>
           </aside>
         </div>
@@ -2280,6 +3173,1150 @@
     renderDay(day);
   });
 
+  // Scroll arrows pra navegação horizontal das abas
+  document.getElementById('dayScrollLeft')?.addEventListener('click', () => {
+    tabsEl.scrollBy({ left: -180, behavior: 'smooth' });
+  });
+  document.getElementById('dayScrollRight')?.addEventListener('click', () => {
+    tabsEl.scrollBy({ left: 180, behavior: 'smooth' });
+  });
+
+  // Botão de arquivo de edições do caça-palavras
+  document.getElementById('cacaArchiveBtn')?.addEventListener('click', () => openModal('cacaArchive'));
+
+  function cacaOpenArchive() {
+    const host = document.getElementById('cacaArchiveList');
+    if (!host) return;
+    const currentDay = (DAYS.find(d => d.key === document.body.dataset.active) || DAYS[0]);
+    const items = DAYS.slice().reverse().map(day => {
+      const isActive = day.key === currentDay.key;
+      const subtitle = (day.subtitle || '').replace(/^EDIÇÃO\s+Nº\s+\d+\s*[—-]\s*/, '');
+      const wordsPreview = (day.words || []).slice(0, 5).join(', ') + (day.words && day.words.length > 5 ? '…' : '');
+      return `<button type="button" class="caca-archive-item ${isActive ? 'active' : ''}" data-day="${day.key}">
+        <span class="cai-date">${day.label}</span>
+        <span class="cai-info">
+          <span class="cai-subtitle">${subtitle}</span>
+          <span class="cai-words">${wordsPreview}</span>
+        </span>
+      </button>`;
+    }).join('');
+    host.innerHTML = items;
+    host.querySelectorAll('.caca-archive-item').forEach(item => {
+      item.addEventListener('click', () => {
+        const dayKey = item.dataset.day;
+        closeModal('cacaArchive');
+        activateTab(dayKey);
+        renderDay(dayKey);
+      });
+    });
+  }
+
+  // === Termo (Palavra do Dia) ===
+  // Lista de palavras. Acentos preservados pra exibição,
+  // matching faz normalização. Edite à vontade.
+  const TERMO_WORDS = [
+    'ATLAS', 'PRAIA', 'AREIA', 'NUVEM', 'NOITE', 'SONHO', 'MUNDO', 'TRONO',
+    'CHUVA', 'PEDRA', 'PRATA', 'VENTO', 'MAGIA', 'CARTA', 'LIVRO', 'BARCO',
+    'PEIXE', 'FOGO',  'OURO',  'JORNAL','OCEANO','ESTRELA','CASTELO','MARINHO',
+    'DESERTO','TÁRTARO','RÁDIO','MINAS','MIMIR','PINKY','ÁRVORE'
+  ];
+  const TERMO_START_DATE = '2026-05-11'; // âncora pra cálculo do dia
+  const TERMO_STORAGE_KEY = 'jornal-atlas-termo-v2';
+
+  const TERMO_MODES = {
+    solo:    { boards: 1, extraAttempts: 0, label: 'Solo' },
+    dueto:   { boards: 2, extraAttempts: 1, label: 'Dueto' },
+    quarteto:{ boards: 4, extraAttempts: 3, label: 'Quarteto' }
+  };
+
+  // Dicionário de palavras válidas (normalizadas, sem acento, maiúsculas)
+  const TERMO_DICT = new Set(["ABACAS", "ABACAX", "ABACAXI", "ABACAXIS", "ABACO", "ABACOAR", "ABADES", "ABAFADOS", "ABAFAR", "ABAIXAR", "ABALADO", "ABALAR", "ABALOAR", "ABANAR", "ABANDON", "ABASTEC", "ABATER", "ABATIDO", "ABDICAR", "ABDOME", "ABDOMEM", "ABDOMIN", "ABELHA", "ABELHEIR", "ABENCO", "ABENCOA", "ABENCOAR", "ABERTO", "ABERTOS", "ABERTURA", "ABERTURAS", "ABISMADO", "ABISMAL", "ABISMO", "ABNEGA", "ABOLIDAS", "ABOLIDO", "ABOLIR", "ABORDAGE", "ABORRECER", "ABORTO", "ABRACA", "ABRACADOS", "ABRACAR", "ABRACAREI", "ABRACEIRO", "ABRACO", "ABRACOU", "ABRANDA", "ABRASIVE", "ABRAZAR", "ABRICARS", "ABRIGADO", "ABRIGAR", "ABRIGOS", "ABRILHAN", "ABRIRA", "ABRIRAM", "ABROGAR", "ABROLHAR", "ABRUPT", "ABRUPTO", "ABSURDA", "ABSURDO", "ABSURDOS", "ABUNDANCIA", "ACABA", "ACABAR", "ACABOU", "ACABRUN", "ACACIA", "ACADEMI", "ACADEMIA", "ACAMPA", "ACAMPADO", "ACAMPAR", "ACASALAR", "ACASO", "ACASOS", "ACASSO", "ACATO", "ACAUSADO", "ACEDE", "ACEDIDO", "ACEITAR", "ACEITARAM", "ACEITO", "ACEITOS", "ACELERA", "ACELERAR", "ACENADO", "ACENAR", "ACENDERIA", "ACENO", "ACENTO", "ACENTUA", "ACENTUAR", "ACEPCAO", "ACERCAR", "ACEROLA", "ACEROS", "ACERTADO", "ACERTAR", "ACERTARAM", "ACERTOSA", "ACERVO", "ACERVOS", "ACERVOSA", "ACESSAR", "ACESSO", "ACESSOS", "ACHADIO", "ACHATADO", "ACHATAR", "ACHEGA", "ACHEGAR", "ACHEIS", "ACHISTA", "ACIDENT", "ACIDENTAR", "ACIDENTE", "ACIDEZ", "ACIDO", "ACIDOS", "ACIDOSE", "ACIONA", "ACIONAR", "ACIONI", "ACOES", "ACOLHE", "ACOLHEDO", "ACOLHER", "ACOLHIDA", "ACOLITAR", "ACOMODA", "ACOMODAR", "ACOMPANH", "ACONSEL", "ACONTEC", "ACONTECE", "ACOPLAR", "ACORD", "ACORDA", "ACORDADA", "ACORDAR", "ACORDO", "ACORDOIS", "ACORDOS", "ACORDS", "ACOSTUM", "ACOTOVEL", "ACOUGUE", "ACREDIT", "ACRESCER", "ACRIDONI", "ACUDA", "ACUMULA", "ACUMULADO", "ACUSACAO", "ACUSAR", "ADAPTAR", "ADEPTOS", "ADERENT", "ADERIDO", "ADERIR", "ADERIRA", "ADESAO", "ADEUS", "ADEUSEMOS", "ADIADO", "ADIANTAR", "ADIANTE", "ADIAR", "ADICAO", "ADIDOS", "ADITIVO", "ADIVI", "ADJACENTE", "ADJETI", "ADJETIVO", "ADMINI", "ADMINISTRA", "ADMIRADO", "ADMIRAR", "ADMIRARAM", "ADMIRAS", "ADMITI", "ADMITIDO", "ADMITIR", "ADOECE", "ADOECER", "ADOLES", "ADORA", "ADORAR", "ADORME", "ADOTAR", "ADQUIRIR", "ADUBAR", "ADUBO", "ADUBOS", "ADULTOS", "ADVENT", "ADVENTI", "ADVERSARIO", "ADVERT", "ADVOGADO", "ADVOGAR", "AERAR", "AEREO", "AERIEDAD", "AERONAVE", "AEROPOR", "AEROSPACE", "AEROVIDRO", "AEROVOLO", "AFAGADO", "AFAGAR", "AFAIRE", "AFASTADAS", "AFASTAR", "AFASTARA", "AFASTAS", "AFASTOSE", "AFASTOU", "AFAZER", "AFETADO", "AFIANCAR", "AFINAR", "AFIRMAR", "AFIXACAO", "AFLEMAR", "AFLITO", "AFLOR", "AFOFADO", "AFOFAR", "AFOGAR", "AFOITA", "AFOITO", "AFORE", "AGARRAR", "AGENCIA", "AGENDA", "AGENTE", "AGENTES", "AGIA", "AGIANDO", "AGILID", "AGILME", "AGITADO", "AGITAR", "AGITO", "AGORA", "AGRAR", "AGRARI", "AGRAVAR", "AGRESS", "AGRESTE", "AGUACEI", "AGUARDA", "AGUARIA", "AGUDA", "AGUDEZA", "AGUDO", "AGUDOS", "AGULHA", "AGULHAS", "AINDA", "AIRES", "AISHA", "AJEITAR", "AJOELHA", "AJOELHAR", "AJUDA", "AJUDADA", "AJUDAR", "AJUDARA", "AJUSTAR", "AJUSTES", "ALADO", "ALARGAR", "ALAS", "ALBINO", "ALBUM", "ALCAR", "ALDEI", "ALDEIA", "ALECRIM", "ALEGAR", "ALEGORI", "ALEGR", "ALEGRAR", "ALEGRE", "ALEGRES", "ALEGRIA", "ALEM", "ALEMA", "ALEMAO", "ALERGIA", "ALERTA", "ALERTAR", "ALERTAS", "ALEUS", "ALEVIA", "ALEVITA", "ALEXANDR", "ALFABE", "ALFABETO", "ALFACE", "ALFAIA", "ALFOM", "ALFOMB", "ALGAS", "ALGAZARRA", "ALGEME", "ALGOZ", "ALGUEM", "ALGUM", "ALGUMA", "ALGUMAS", "ALGUNS", "ALHO", "ALIADO", "ALIANCA", "ALIAS", "ALIASE", "ALICATE", "ALICE", "ALIMENTO", "ALIVIAR", "ALIVIO", "ALIVIOS", "ALMA", "ALMACEN", "ALMACER", "ALMOCO", "ALMOFA", "ALMOFAD", "ALMOS", "ALOJAR", "ALPENS", "ALPENSO", "ALPES", "ALPINA", "ALPINIS", "ALPINO", "ALTA", "ALTAMENTE", "ALTAR", "ALTARES", "ALTAS", "ALTERA", "ALTERAR", "ALTITU", "ALTITUDE", "ALTO", "ALTOS", "ALTURA", "ALTURAS", "ALUMINIO", "ALUNA", "ALUNADO", "ALUNO", "ALVENA", "ALVO", "ALVOS", "AMABIL", "AMADO", "AMADOR", "AMADUR", "AMAIS", "AMANHA", "AMANTE", "AMAR", "AMAREL", "AMARELA", "AMARELO", "AMARGA", "AMARGAR", "AMARGO", "AMARRA", "AMARRAR", "AMARROU", "AMARSE", "AMASSAR", "AMASTE", "AMAVA", "AMAVEL", "AMBIEN", "AMBIENTE", "AMBIGU", "AMBOS", "AMEACA", "AMEACAR", "AMEDIA", "AMEDION", "AMEIA", "AMEM", "AMENIDA", "AMENIZAR", "AMENO", "AMENOS", "AMERIC", "AMERICA", "AMETIS", "AMIGAS", "AMIGOS", "AMIZADE", "AMOR", "AMORA", "AMOROSO", "AMOSTRA", "AMPLA", "AMPLO", "AMPULA", "AMUADO", "ANALIDE", "ANALIS", "ANALISA", "ANALOGI", "ANARQUI", "ANATEMA", "ANCIA", "ANCIAO", "ANCIAOS", "ANCORA", "ANDADAS", "ANDADURA", "ANDAR", "ANDEAR", "ANDOREN", "ANEDOTA", "ANEIS", "ANELS", "ANEMIA", "ANEMICO", "ANGELI", "ANGELIC", "ANGOLA", "ANGUSTI", "ANIMADO", "ANIMAIS", "ANIMAL", "ANIMALS", "ANIMAR", "ANIMOSO", "ANIMUS", "ANINHA", "ANIVERS", "ANJA", "ANJO", "ANJOS", "ANO", "ANOITAR", "ANOITE", "ANONIMI", "ANONIMO", "ANORMAL", "ANOS", "ANOTAR", "ANOTOU", "ANSEI", "ANSEIO", "ANSIA", "ANSIEDADE", "ANSIO", "ANTERI", "ANTES", "ANTI", "ANTIGA", "ANTRO", "ANUIA", "ANUNC", "ANUS", "ANUSAR", "AONDE", "APAGAR", "APAGOU", "APAR", "APAREC", "APAREN", "APARTAR", "APENAS", "APESAR", "APIO", "APITO", "APOIA", "APOIO", "APOSEN", "APOSTAR", "APREENDE", "APRENDE", "APROV", "APROVA", "APROVAR", "APTO", "APURAR", "AQUARE", "AQUEL", "AQUELA", "AQUI", "ARABE", "ARABES", "ARABIA", "ARABID", "ARADO", "ARANHA", "ARAR", "ARARA", "ARARI", "ARCAICO", "ARCO", "ARDIA", "ARDIDO", "ARDOR", "AREA", "AREIA", "ARENA", "AREOLAR", "ARES", "ARESTAS", "ARFAR", "ARGEL", "ARGIL", "ARGILA", "ARGOLA", "ARMA", "ARMADA", "ARMAR", "ARMOR", "AROMA", "ARPAO", "ARQUEAR", "ARRA", "ARRAI", "ARRAIS", "ARRANC", "ARRAS", "ARRECA", "ARREDA", "ARREDOR", "ARROZ", "ARSE", "ARSENIO", "ARTERA", "ARTERI", "ARTES", "ARTICUL", "ARTIGO", "ARTUR", "ASADO", "ASAS", "ASCO", "ASIA", "ASIAT", "ASILO", "ASIMIN", "ASMA", "ASMAS", "ASNOS", "ASPAS", "ASPECT", "ASPIRO", "ASSADO", "ASSAR", "ASSEDI", "ASSEDIO", "ASSEMB", "ASSIM", "ASSIST", "ASSUME", "ASSUMI", "ASSUMIR", "ASTRAL", "ASTRO", "ASTROS", "ATA", "ATALH", "ATALHO", "ATAQUE", "ATAR", "ATAS", "ATAUDE", "ATE", "ATEN", "ATERRO", "ATEU", "ATILA", "ATILO", "ATIRA", "ATIRAR", "ATIVA", "ATIVAR", "ATIVO", "ATIVOS", "ATLAS", "ATO", "ATONIA", "ATOR", "ATOS", "ATRACA", "ATRAIA", "ATRAIR", "ATRAS", "ATRELA", "ATRELO", "ATRIBU", "ATRIO", "ATROZ", "ATUAL", "ATUALI", "ATUAR", "AUDIO", "AUDIVE", "AUGE", "AULAS", "AUMENT", "AUMENTA", "AURA", "AUREO", "AURIO", "AUSTER", "AUTOR", "AUTORA", "AUTORES", "AVALIA", "AVATAR", "AVENID", "AVENTU", "AVES", "AVESSO", "AVISAR", "AVISO", "AVISOS", "AVO", "AVOAVO", "AVOS", "AXES", "AZAR", "AZEDAR", "AZEDO", "AZUIS", "AZUL", "AZULAR", "BABA", "BABE", "BACALH", "BACANA", "BACIA", "BACO", "BACOAR", "BAGAGE", "BAGEL", "BAILA", "BAILAR", "BAILE", "BAINHA", "BAIO", "BAIRR", "BAIXA", "BAIXAR", "BAIXO", "BAIXOS", "BALA", "BALADA", "BALAIO", "BALANC", "BALAO", "BALCAO", "BALDE", "BALEIA", "BALL", "BALOEIRA", "BALSA", "BAMBI", "BAMBU", "BANANA", "BANCO", "BANDA", "BANDIDO", "BANG", "BANHAR", "BANHEIR", "BANHO", "BANIDOS", "BANIR", "BARBA", "BARBAR", "BARCO", "BARRA", "BARRO", "BASE", "BASES", "BASIC", "BASSE", "BATA", "BATATA", "BATE", "BATEM", "BATER", "BATERIA", "BATIDA", "BATIDOS", "BATIS", "BATIZA", "BATO", "BAU", "BAUS", "BAZAR", "BEBE", "BEBEDOR", "BEBER", "BEBES", "BEBIDA", "BEGE", "BEIJA", "BEIJAR", "BEIJINHO", "BEIJO", "BEIRA", "BELA", "BELAS", "BELE", "BELEM", "BELEZA", "BELO", "BELORIZ", "BELOS", "BEMA", "BENGAL", "BENGAS", "BENS", "BENTO", "BENZER", "BERLIM", "BERROS", "BESTA", "BESTIA", "BIBLI", "BIBLIA", "BICA", "BICAS", "BICHO", "BICHOS", "BICICL", "BICO", "BICOS", "BIFE", "BIGAS", "BIGODE", "BILE", "BILHE", "BINGO", "BIOLOG", "BIRRA", "BIRRAS", "BISA", "BISCOIT", "BISCOITO", "BISNEU", "BLINDA", "BLOCO", "BLOG", "BLOQUEAR", "BLUSA", "BOA", "BOAS", "BOATO", "BOBA", "BOBAGE", "BOBO", "BOCA", "BOCAL", "BODA", "BODE", "BODES", "BOI", "BOIA", "BOIANA", "BOIS", "BOLA", "BOLACHA", "BOLAS", "BOLINH", "BOLINHA", "BOLOR", "BOLSA", "BOLSO", "BOM", "BOMA", "BOMBA", "BONDE", "BONITO", "BONS", "BOQUEI", "BORA", "BORDA", "BORDADO", "BORDO", "BORDOA", "BOSQUE", "BOSSA", "BOTA", "BOTAR", "BOTAS", "BOTI", "BOTO", "BOTOES", "BOX", "BOXEAR", "BRABO", "BRACA", "BRACO", "BRADO", "BRANCO", "BRANDO", "BRASA", "BRASIL", "BRAVO", "BREVE", "BRINDE", "BRINQUEDO", "BRIO", "BRISA", "BRISAR", "BRITA", "BROCA", "BROCAS", "BROCHU", "BRONCA", "BRONCO", "BRONZE", "BROTA", "BROTAR", "BRUMA", "BRUMOSO", "BRUSCO", "BRUTAL", "BUCANE", "BUFAR", "BUFAS", "BUFEAR", "BURACO", "BURO", "BURRO", "BUSCA", "BUSCAR", "BUSCO", "BUSCOU", "BUZINA", "CABAL", "CABER", "CABIDE", "CABO", "CABOS", "CABRA", "CACA", "CACAU", "CACHO", "CADA", "CADEI", "CAEM", "CAES", "CAFE", "CAFES", "CAGAR", "CAI", "CAIA", "CAIBA", "CAIDA", "CAIDO", "CAIM", "CAINHO", "CAIR", "CAIRO", "CAIS", "CAIU", "CAIXA", "CAIXAS", "CAJU", "CALA", "CALAR", "CALDO", "CALMA", "CALMO", "CALO", "CALOR", "CAMA", "CAMBO", "CAMPO", "CANA", "CANAL", "CANAS", "CANO", "CANOA", "CANSA", "CANTA", "CANTO", "CAO", "CAOS", "CAPA", "CAPAR", "CAPAS", "CAPAZ", "CAPI", "CAPIM", "CAPO", "CARA", "CARAS", "CARGA", "CARIA", "CARIO", "CARMO", "CARNE", "CARO", "CAROS", "CARPA", "CARRO", "CARTA", "CASA", "CASAL", "CASAR", "CASAS", "CASCA", "CASE", "CASEM", "CASOS", "CASTA", "CATAR", "CATIVO", "CATO", "CATOS", "CAUDA", "CAULE", "CAUSA", "CAUSO", "CAVA", "CAVAL", "CAVAR", "CCS", "CDS", "CEAR", "CEDE", "CEDER", "CEDO", "CEIA", "CEIAS", "CELA", "CELE", "CELS", "CENA", "CENAS", "CENSO", "CERA", "CERCA", "CERO", "CERTA", "CERTO", "CERVA", "CESAR", "CESTA", "CESTO", "CETIN", "CETRO", "CEU", "CEUS", "CHA", "CHAGA", "CHALE", "CHAMA", "CHAO", "CHATA", "CHATO", "CHAVE", "CHEFE", "CHEGA", "CHEIA", "CHEIO", "CHEK", "CHIC", "CHICO", "CHINA", "CHINO", "CHITA", "CHOPP", "CHOQUE", "CHORA", "CHORO", "CHUTAR", "CHUTE", "CHUVA", "CIBO", "CICA", "CICLO", "CIFRA", "CIGAR", "CIMA", "CIMAS", "CIMO", "CINCO", "CINE", "CINIM", "CINTA", "CINTO", "CIRCA", "CIRCO", "CISA", "CITAR", "CITE", "CIVIL", "CLA", "CLAMA", "CLAR", "CLARA", "CLARO", "CLAVE", "CLERO", "CLIMA", "CLIO", "CLIPE", "CLONE", "CLORO", "CLUBE", "CMAS", "COBRA", "COBRE", "COCA", "COCAR", "COCO", "COCOS", "COFRE", "COISA", "COLA", "COLAR", "COLE", "COLEM", "COLHE", "COLINA", "COLO", "COLON", "COM", "COMA", "COMAS", "COMBI", "COMBO", "COMER", "COMES", "COMI", "COMO", "COMPRA", "COMUM", "CONCO", "CONDE", "CONE", "CONHO", "CONSO", "CONTA", "CONTAR", "CONTE", "CONTO", "CONVI", "COPA", "COPAS", "COPIA", "COPOS", "COR", "CORADO", "CORAGE", "CORAS", "CORDA", "CORDAS", "CORE", "CORES", "CORNE", "CORNO", "CORO", "COROA", "COROAS", "COROS", "CORPO", "CORPOS", "CORRA", "CORRE", "CORRES", "CORRI", "CORRO", "CORTA", "CORTE", "CORUJA", "COSE", "COSTA", "COSTAS", "COSTU", "COTA", "COTAR", "COTAS", "COTE", "COURO", "COXA", "COZIDA", "COZIDO", "COZIN", "CRAS", "CRASE", "CRAVO", "CRER", "CRES", "CRESPO", "CREU", "CRIA", "CRIADO", "CRIES", "CRIME", "CRINA", "CROSTA", "CRU", "CRUA", "CRUS", "CRUZ", "CRUZA", "CUBA", "CUBAS", "CUBO", "CUBOS", "CUEM", "CUI", "CUIDA", "CULPA", "CULPAR", "CULTO", "CULTOS", "CUMA", "CUME", "CUMI", "CUMPRI", "CUNHA", "CURAR", "CURDOS", "CURES", "CURIA", "CURTA", "CURTO", "CURVA", "CUSCO", "CUSTA", "CUSTAR", "CUSTO", "CUTI", "DADIVA", "DADO", "DADOS", "DAI", "DAIA", "DALI", "DAMAS", "DANCA", "DANDO", "DANTE", "DAR", "DARA", "DAS", "DATA", "DATAS", "DAVA", "DEBIL", "DEEDE", "DEFI", "DEIXA", "DELE", "DELES", "DEMAIS", "DEMO", "DENTE", "DERAM", "DERIVA", "DESC", "DESDA", "DESEM", "DESEU", "DESIA", "DESPI", "DESSE", "DEUS", "DEUSA", "DEVA", "DEVE", "DEVEM", "DEVER", "DEVERA", "DEVES", "DEVO", "DEXTR", "DEZ", "DIA", "DIANTE", "DIAS", "DICA", "DICAS", "DIETA", "DIRA", "DIRAS", "DIRES", "DIRIA", "DISSE", "DISSO", "DITA", "DITO", "DITOS", "DIZER", "DOACAO", "DOAR", "DOBRA", "DOCAS", "DOCE", "DOENT", "DOG", "DOIS", "DOM", "DOMUS", "DON", "DONA", "DONO", "DONOS", "DORE", "DORME", "DORMI", "DOS", "DOSE", "DOSES", "DOSTA", "DOTAR", "DROGA", "DUA", "DUAL", "DUAS", "DURE", "DURO", "DUSA", "ECOA", "EDITA", "EFEIT", "EFETU", "EIRA", "EITO", "ELE", "ELES", "ELIMI", "ELITE", "ELMO", "ELOS", "EMA", "EMAIL", "EMBA", "EME", "EMUDE", "ENCE", "ENDIN", "ENFIO", "ENRGI", "ENSAIA", "ENTAO", "ENTE", "ENTRA", "ENTRE", "ENVELOP", "EPICO", "ERAM", "ERAS", "ERGA", "ERGUE", "ERMA", "ERMO", "ERRA", "ERRO", "ERROS", "ERVA", "ERVAS", "ESBOC", "ESCAL", "ESCAP", "ESCAS", "ESCOL", "ESCRO", "ESCUT", "ESFRO", "ESLOV", "ESPER", "ESQUE", "ESQUI", "ESSAS", "ESSES", "ESTAO", "ESTAR", "ESTOU", "ESTUD", "ETAPA", "ETOS", "EVITA", "EVITAR", "EVOC", "EXATO", "EXIBO", "EXOR", "EXTRA", "EYZYR", "FACA", "FACE", "FADA", "FAINA", "FALA", "FALAR", "FALE", "FALHA", "FALSO", "FAMA", "FARDO", "FAROL", "FARSA", "FATIA", "FATOR", "FATOS", "FAUNA", "FAVA", "FAVOR", "FAZE", "FAZER", "FEBRE", "FECH", "FECHA", "FECHO", "FEDE", "FEDER", "FEDO", "FEDOR", "FEEL", "FEIA", "FEIO", "FEIRA", "FELIZ", "FELZ", "FEMEA", "FENA", "FENDA", "FENO", "FERA", "FERAS", "FERE", "FERI", "FERIA", "FERIDO", "FERR", "FERRO", "FESTA", "FETO", "FIBRA", "FICA", "FICAR", "FICHA", "FIGUR", "FILA", "FILE", "FILHA", "FILHO", "FILO", "FIM", "FINA", "FINAR", "FINOS", "FIO", "FIRME", "FIT", "FITAS", "FIXA", "FIXAR", "FIXAS", "FIXO", "FLAU", "FLOR", "FLUI", "FOCA", "FOCAL", "FOCAR", "FOFO", "FOGO", "FOGOS", "FOLGA", "FOLHA", "FORA", "FORAM", "FORCA", "FORD", "FORE", "FORM", "FORMA", "FORTE", "FORUM", "FOSE", "FOSSE", "FOZ", "FRACO", "FRADE", "FRAGA", "FRASE", "FREI", "FREIO", "FRETE", "FRIO", "FRISO", "FRITA", "FROTA", "FRUTA", "FUBA", "FUMA", "FUMO", "FUNDO", "FUNK", "FURO", "FURTO", "FUSAO", "FUSO", "FUTIL", "GABOS", "GACA", "GAIAS", "GAITA", "GALA", "GALAO", "GALO", "GALOS", "GANA", "GANHA", "GANHO", "GARRA", "GATA", "GATAS", "GATO", "GATOS", "GAVE", "GEAR", "GEBO", "GEMA", "GEMI", "GEMS", "GENE", "GENRO", "GENTE", "GERAL", "GESSO", "GIRA", "GIRAR", "GIRO", "GLAS", "GLOBO", "GLUC", "GOELA", "GOIAS", "GOLA", "GOLFO", "GOLPE", "GOMA", "GORE", "GOSTO", "GOTA", "GOTAS", "GOZAR", "GRACO", "GRATO", "GRAU", "GRAVE", "GRELO", "GRIM", "GRIPO", "GRITO", "GROSS", "GRUPO", "GUARDA", "GUERRA", "GUIA", "HAJA", "HASTE", "HAVER", "HERE", "HEROIS", "HEX", "HIENA", "HIQUE", "HOJE", "HORA", "HORAS", "HORTA", "HUGE", "HUMO", "ICE", "IDA", "IDEIA", "IDOS", "IDOSA", "IDOSO", "IGOR", "IGUA", "IGUAL", "ILHA", "ILHAS", "IMER", "IRA", "IRES", "IRMA", "IRMAO", "ISCAS", "ISSO", "ITAU", "ITEM", "ITENS", "IUS", "JACA", "JADE", "JALE", "JANGOS", "JATO", "JEITO", "JESUS", "JOGAR", "JOGO", "JOIA", "JORNA", "JOSE", "JOVEM", "JUIZ", "JULHO", "JUNHO", "JUNTA", "JUNTO", "JURAR", "JUSTO", "KAUAN", "LACRO", "LADO", "LAGOA", "LAMA", "LANCA", "LANCE", "LANE", "LAPIS", "LAR", "LARGO", "LARS", "LASS", "LATA", "LATAS", "LATIM", "LAVA", "LAVAR", "LEAL", "LEAO", "LEGAL", "LEI", "LEIA", "LEIS", "LEMA", "LERA", "LESA", "LESE", "LESTE", "LETRA", "LEVAR", "LEVE", "LEVES", "LIDOS", "LIMAO", "LIMBO", "LIMOS", "LIRA", "LIRIO", "LITE", "LIVRE", "LIVRO", "LIXO", "LOBO", "LOCAL", "LOIRA", "LOJA", "LOLA", "LONA", "LONGE", "LONGO", "LOTE", "LOTES", "LOUCO", "LUA", "LUBSS", "LUGA", "LUGAR", "LUTA", "LUTAR", "LUTAS", "LUVAS", "LUZ", "MACA", "MACAS", "MACIA", "MADE", "MAGGI", "MAGIA", "MAGO", "MAGRA", "MAGRO", "MAIA", "MAIO", "MAIOR", "MAIS", "MALA", "MALES", "MALHA", "MAMAS", "MANDA", "MANGAS", "MANIA", "MANSO", "MAPA", "MAR", "MARAR", "MARE", "MARES", "MARGE", "MARIA", "MARS", "MARTE", "MASA", "MASE", "MATA", "MATAR", "MATIZ", "MATO", "MATOS", "MATUE", "MAUS", "MEDA", "MEDE", "MEDI", "MEDIO", "MEGAS", "MEIA", "MEIO", "MELHO", "MENOR", "MENOS", "MENTE", "MENU", "MERA", "MESA", "MESAS", "MESES", "META", "METE", "METO", "METR", "MEU", "MEUS", "MIAR", "MIDA", "MIDIA", "MIDO", "MILA", "MIM", "MIMOS", "MINA", "MIRAR", "MIRO", "MIRR", "MIRRA", "MISTA", "MITO", "MODA", "MODAS", "MODO", "MOELA", "MOFO", "MOLA", "MOLAS", "MONTE", "MORA", "MORAL", "MORE", "MOREN", "MORI", "MORO", "MORRO", "MOSTR", "MOTA", "MOTE", "MOTO", "MOTU", "MOVE", "MUCO", "MUDA", "MUDAR", "MUDO", "MUITO", "MULA", "MULHE", "MULTA", "MUNDO", "MUNE", "MUNI", "MURAL", "MURI", "MURO", "MUSA", "MUSAS", "MUSGO", "MUSO", "MUTUA", "NACAO", "NADA", "NADO", "NAS", "NASA", "NASAL", "NASCE", "NATA", "NATAL", "NAVE", "NAVI", "NEGRO", "NESC", "NESS", "NETAS", "NETO", "NETOS", "NIDO", "NIDOS", "NINA", "NINHO", "NIVEL", "NOBRE", "NOIA", "NOIR", "NOIS", "NOIT", "NOITE", "NOJO", "NOMA", "NOME", "NOMES", "NORE", "NORTE", "NOS", "NOTA", "NOTAS", "NOTRE", "NOVA", "NOVAS", "NOVE", "NOVO", "NOVOS", "NUCA", "NULA", "NUMERO", "NUVEM", "OASE", "OBRA", "OBRAS", "OCRE", "ODIO", "OLA", "OLAS", "OLEO", "OLEOS", "OLHAR", "OLHO", "OLHOS", "OLIM", "OLOS", "OMBRO", "ONDAS", "ONIBUS", "ONIX", "OPCE", "ORA", "ORAL", "ORAS", "ORDA", "ORDEM", "ORELHA", "ORES", "ORFAO", "OSSO", "OSSOS", "OURA", "OURO", "OUSAR", "OUSO", "OUTR", "OUTRA", "OUTRO", "OVELH", "OVO", "OVOS", "OVULO", "PACA", "PACAS", "PACI", "PACTO", "PADE", "PADRE", "PAGA", "PAGAR", "PAGAS", "PAGO", "PAGOS", "PAI", "PAINEL", "PAIS", "PALA", "PALAVR", "PALCO", "PALMA", "PANO", "PAPEL", "PARA", "PARAR", "PARES", "PARO", "PARS", "PARTE", "PASA", "PASES", "PASMA", "PASMO", "PASSA", "PASSO", "PASTA", "PATA", "PATAS", "PATIO", "PATO", "PATOS", "PAU", "PAUS", "PAZ", "PAZE", "PEDE", "PEDIR", "PEDRA", "PEGA", "PEGAR", "PEGO", "PEITO", "PEIXE", "PELA", "PELE", "PELES", "PELOS", "PENAS", "PENSA", "PENTE", "PERA", "PERDA", "PERDI", "PERFI", "PERTO", "PESA", "PESAR", "PESCA", "PESO", "PEU", "PIANO", "PIAR", "PIDE", "PIDO", "PIER", "PINO", "PINTAR", "PINXE", "PIORA", "PIPA", "PIRA", "PIRES", "PISO", "PISTA", "PITAR", "PLENA", "PLEON", "PNEUS", "POBR", "POBRE", "POCA", "POCO", "PODE", "PODER", "POE", "POEM", "POEMA", "POETA", "POIS", "POLAR", "POLE", "POLEN", "POMAR", "PONTA", "PONTE", "PORA", "PORE", "POREM", "PORQ", "PORT", "PORTA", "POS", "POSA", "POSE", "POSES", "POSSE", "POSTA", "POSTO", "POTE", "POUS", "PRACA", "PRADO", "PRAIA", "PRAS", "PRAT", "PRATO", "PRECE", "PREJ", "PREM", "PRES", "PRESA", "PRESO", "PRETO", "PRIMA", "PRISM", "PROF", "PROS", "PROXY", "PUDOR", "PULAR", "PULGA", "PULSO", "PUNHO", "PUNI", "PUNIR", "QUASE", "QUE", "QUEDA", "QUEM", "QUER", "QUERE", "QUERO", "QUEST", "QUIA", "QUIETO", "QUINTA", "RABO", "RACAO", "RAIA", "RAINHA", "RAIO", "RAIVA", "RAIZ", "RAMO", "RANA", "RANCO", "RANI", "RAPAZ", "RAPI", "RARA", "RARE", "RAROS", "RASAR", "RASO", "RATAS", "RATO", "RATOS", "RAUL", "REAL", "REAR", "RECE", "RECO", "REDA", "REDE", "REDES", "REFI", "REGA", "REGE", "REGRA", "REI", "REIA", "REINA", "REINO", "REIS", "RELI", "REMA", "REME", "REMER", "REMO", "REMOS", "RENDA", "RENS", "REPE", "REPOR", "RES", "RESTE", "RESTO", "RETAS", "REVEL", "RIBOR", "RICA", "RICAS", "RICO", "RICOS", "RIDA", "RIFAS", "RIGOR", "RIMAS", "RINA", "RIO", "RIOS", "RIRE", "RISA", "RISADA", "RISCO", "RISO", "RITMO", "RITO", "RITOS", "RIVE", "ROBOT", "ROCA", "ROCH", "ROCHA", "RODA", "RODAR", "RODAS", "RODE", "RODO", "ROER", "ROLA", "ROLAR", "ROLE", "ROLO", "ROMA", "ROSA", "ROSAS", "ROSE", "ROSTO", "ROTA", "ROTAS", "ROUPA", "RUA", "RUDA", "RUFAR", "RUFLE", "RUGIR", "RUI", "RUIDO", "RUIM", "RUINA", "RUINS", "RUM", "RUMOR", "SAAB", "SABE", "SABER", "SABIA", "SABIO", "SABO", "SACA", "SACAS", "SACO", "SACOS", "SAGA", "SAGAZ", "SAGE", "SAGRA", "SAI", "SAIA", "SAIDA", "SAIO", "SAIR", "SAITE", "SALA", "SALDO", "SALSA", "SALTO", "SALVA", "SAMBA", "SAMI", "SAMXP", "SANTO", "SAPAT", "SAPO", "SAPOS", "SARA", "SARC", "SAUDE", "SAULA", "SAUNA", "SECA", "SECO", "SEDA", "SEDE", "SEGA", "SEGO", "SEIA", "SEIS", "SELA", "SELO", "SELOS", "SEMI", "SEMP", "SENA", "SENHA", "SENS", "SENSO", "SER", "SERA", "SETA", "SETE", "SETOR", "SEVA", "SEXTA", "SIA", "SIBA", "SIDA", "SIM", "SIMA", "SIME", "SIMI", "SINA", "SINE", "SINHA", "SIRGO", "SISAL", "SISMO", "SISO", "SITE", "SITES", "SOB", "SOBA", "SOBE", "SOBO", "SOBRA", "SOBRE", "SOCAR", "SOCO", "SODA", "SOEM", "SOFA", "SOFRE", "SOJA", "SOL", "SOLA", "SOLAR", "SOLE", "SOLO", "SOMA", "SOMAS", "SOMBR", "SOMM", "SOMOS", "SONA", "SONDA", "SONHO", "SONO", "SONS", "SOPA", "SOPRA", "SOPRO", "SOR", "SORTE", "SOSO", "SOSSE", "SOTAO", "SOVAR", "SOVER", "SOZIN", "SUAVE", "SUBA", "SUBI", "SUBIR", "SUCO", "SUCOS", "SUDA", "SUECO", "SUEM", "SUFI", "SUI", "SUITE", "SUME", "SUMI", "SUMO", "SUMOS", "SUOR", "SURA", "SURE", "SURFE", "SURTO", "SUSHI", "SUTIS", "TABA", "TABU", "TACA", "TACAS", "TACE", "TAIS", "TAKKE", "TAL", "TALA", "TALE", "TALH", "TALI", "TALO", "TALU", "TANO", "TANTO", "TAPA", "TARA", "TARE", "TAREFA", "TARO", "TASA", "TAU", "TAXA", "TAXAR", "TAXAS", "TAXI", "TECER", "TEER", "TEIA", "TEIAS", "TEM", "TEMA", "TEMAS", "TEME", "TEMES", "TEMO", "TEMPO", "TENA", "TENDA", "TENDE", "TENE", "TENHA", "TENRO", "TENSO", "TENTE", "TENU", "TER", "TERA", "TERMO", "TERN", "TERNO", "TERRA", "TES", "TESE", "TESES", "TESO", "TESTE", "TEU", "TEUS", "TEXTO", "TIA", "TIME", "TIMES", "TIO", "TIOS", "TIPO", "TIRA", "TIRAR", "TIRE", "TIRO", "TIROS", "TOCAR", "TODA", "TODAS", "TODO", "TODOS", "TOLOS", "TOM", "TOMAR", "TOMAS", "TOME", "TONS", "TOPAR", "TOPE", "TOQUE", "TORA", "TORE", "TORRE", "TORSO", "TORTA", "TORTO", "TOSAR", "TOSCO", "TOSE", "TOSSE", "TOTA", "TOTAL", "TOUR", "TRACA", "TRACE", "TRADI", "TRAGA", "TRAIA", "TRAMA", "TRANS", "TRAS", "TRAVA", "TRAZ", "TREMA", "TRES", "TREVO", "TREZE", "TRIAR", "TRIBO", "TRIGO", "TRIO", "TRIPA", "TRITO", "TROCA", "TROCO", "TROIA", "TROL", "TROPA", "TRUCO", "TUA", "TUAS", "TUBO", "TUDO", "TUMUL", "TURB", "TURMA", "TUS", "TUTEL", "TUTOR", "TYFOM", "TYPPE", "UDO", "ULNA", "UMA", "UMAS", "UNA", "UNAS", "UNE", "UNG", "UNHA", "UNI", "UNIA", "UNICO", "UNIDA", "UNIR", "UNS", "URBAN", "URBE", "URINA", "URRA", "URRAR", "URSA", "URSO", "URSOS", "USAR", "USE", "USEI", "USEM", "USES", "USINA", "USOS", "USOU", "UTERO", "UVAS", "VAGA", "VAGO", "VAGOS", "VAI", "VAIS", "VALE", "VALER", "VALES", "VALI", "VALOR", "VALS", "VAMOS", "VAO", "VAOR", "VAPOR", "VARA", "VARAS", "VARE", "VARO", "VARRO", "VAS", "VASE", "VASO", "VASOS", "VAU", "VAZA", "VAZIA", "VAZIO", "VEEM", "VEIO", "VEJA", "VELA", "VELHA", "VELHO", "VELI", "VEM", "VEMO", "VENAL", "VENDA", "VENDE", "VENHO", "VENS", "VENTO", "VER", "VERA", "VERAO", "VERBA", "VERBO", "VERDE", "VERME", "VERSO", "VES", "VESA", "VEU", "VEZ", "VEZES", "VIA", "VIAS", "VICIO", "VIDA", "VIDAS", "VIDRO", "VIES", "VINA", "VINCO", "VINHA", "VINHO", "VINI", "VINIL", "VINO", "VINS", "VIOLA", "VIR", "VIRA", "VIRAR", "VIRO", "VIRUS", "VISAR", "VISCO", "VISTA", "VITRO", "VIVAS", "VIVAZ", "VIVE", "VIVER", "VIVES", "VIVIA", "VIVO", "VIVOS", "VOA", "VOAR", "VOCA", "VOCE", "VOGAL", "VOL", "VOLT", "VOLTA", "VOO", "VOTA", "VOTAR", "VOTO", "VOTOS", "VOU", "VOZ", "VOZES", "VUI", "WEB", "XADRE", "XANDE", "XENI", "YUZZO", "ZELA", "ZERAR", "ZERO", "ZEUS", "ZINCO", "ZONA", "ZONAS"]);
+
+  function termoNormalize(s) {
+    return String(s).normalize('NFD').replace(/\p{M}/gu, '').toUpperCase();
+  }
+  function termoDateKey(d) {
+    d = d || new Date();
+    const y = d.getFullYear();
+    const m = String(d.getMonth() + 1).padStart(2, '0');
+    const day = String(d.getDate()).padStart(2, '0');
+    return y + '-' + m + '-' + day;
+  }
+  function termoWordForDate(dateKey) {
+    const start = new Date(TERMO_START_DATE + 'T00:00:00');
+    const today = new Date(dateKey + 'T00:00:00');
+    const days = Math.round((today - start) / 86400000);
+    const idx = ((days % TERMO_WORDS.length) + TERMO_WORDS.length) % TERMO_WORDS.length;
+    return TERMO_WORDS[idx];
+  }
+  function loadTermoState() {
+    try { return JSON.parse(localStorage.getItem(TERMO_STORAGE_KEY)) || {}; }
+    catch (e) { return {}; }
+  }
+  function saveTermoState(patch) {
+    try {
+      const cur = loadTermoState();
+      const next = Object.assign({}, cur, patch);
+      localStorage.setItem(TERMO_STORAGE_KEY, JSON.stringify(next));
+    } catch (e) {}
+  }
+
+  // Estado da sessão atual (multi-board)
+  let termoSession = {
+    dateKey: '',
+    mode: 'solo',
+    hardMode: false,
+    boards: [],          // [{word, norm, done, win, foundAt, keyState}]
+    guesses: [],         // [{letters: [], results: [[..per board..], ...]}]
+    currentCol: 0,
+    done: false,
+    win: false,
+    keyState: {},        // combinado (melhor entre todos os boards)
+    startedAt: null,
+    finishedAt: null,
+    submittedScore: false
+  };
+
+  function termoMaxAttempts(mode) {
+    return 6 + (TERMO_MODES[mode] ? TERMO_MODES[mode].extraAttempts : 0);
+  }
+  function termoWordLenForBoard(mode) {
+    // Solo: usa qualquer tamanho da lista
+    // Dueto/Quarteto: usa só palavras de 5 letras pra consistência visual
+    return mode === 'solo' ? null : 5;
+  }
+  function termoWordsFromList(filteredList) { return filteredList; }
+  function termoFilteredWords(mode) {
+    const fixedLen = termoWordLenForBoard(mode);
+    if (fixedLen === null) return TERMO_WORDS;
+    return TERMO_WORDS.filter(w => termoNormalize(w).length === fixedLen);
+  }
+  function termoBoardsForDay(dateKey, mode) {
+    const config = TERMO_MODES[mode];
+    const start = new Date(TERMO_START_DATE + 'T00:00:00');
+    const day = new Date(dateKey + 'T00:00:00');
+    const dayIndex = Math.round((day - start) / 86400000);
+    const list = termoFilteredWords(mode);
+    if (mode === 'solo') {
+      const idx = ((dayIndex % list.length) + list.length) % list.length;
+      return [list[idx]];
+    }
+    // Dueto/Quarteto: N palavras distintas por dia
+    const startIdx = dayIndex * config.boards;
+    const seen = new Set();
+    const out = [];
+    let probe = 0;
+    while (out.length < config.boards && probe < list.length * 2) {
+      const idx = ((startIdx + probe) % list.length + list.length) % list.length;
+      const w = list[idx];
+      if (!seen.has(w)) {
+        seen.add(w);
+        out.push(w);
+      }
+      probe++;
+    }
+    return out;
+  }
+
+  function termoDaysSinceLaunch(dateKey) {
+    const start = new Date(TERMO_START_DATE + 'T00:00:00');
+    const day = new Date((dateKey || termoDateKey()) + 'T00:00:00');
+    return Math.round((day - start) / 86400000);
+  }
+  function termoIsFutureDay(dateKey) {
+    const today = termoDateKey();
+    return new Date(dateKey + 'T00:00:00') > new Date(today + 'T00:00:00');
+  }
+
+  // Cache de palavras validadas (e rejeitadas) pelo Wikicionário
+  const TERMO_API_VALID_KEY = 'jornal-atlas-termo-api-valid-v1';
+  const TERMO_API_INVALID_KEY = 'jornal-atlas-termo-api-invalid-v1';
+  let termoApiValidCache = (() => {
+    try { return new Set(JSON.parse(localStorage.getItem(TERMO_API_VALID_KEY) || '[]')); }
+    catch (e) { return new Set(); }
+  })();
+  let termoApiInvalidCache = (() => {
+    try { return new Set(JSON.parse(localStorage.getItem(TERMO_API_INVALID_KEY) || '[]')); }
+    catch (e) { return new Set(); }
+  })();
+  function termoSaveApiCache() {
+    try {
+      localStorage.setItem(TERMO_API_VALID_KEY, JSON.stringify([...termoApiValidCache]));
+      localStorage.setItem(TERMO_API_INVALID_KEY, JSON.stringify([...termoApiInvalidCache]));
+    } catch (e) {}
+  }
+
+  // Consulta o Wikicionário (PT) pra validar palavra. Trata acentos via opensearch.
+  // Retorna: true (palavra existe), false (não existe), null (erro de rede).
+  async function termoApiCheck(guessNorm) {
+    try {
+      const url = 'https://pt.wiktionary.org/w/api.php?action=opensearch&search='
+        + encodeURIComponent(guessNorm.toLowerCase())
+        + '&limit=20&format=json&origin=*';
+      const r = await fetch(url);
+      if (!r.ok) return null;
+      const data = await r.json();
+      const matches = Array.isArray(data) && Array.isArray(data[1]) ? data[1] : [];
+      // Aceita se algum dos matches normaliza pra mesma palavra
+      const hit = matches.some(m => termoNormalize(m) === guessNorm);
+      return hit;
+    } catch (e) {
+      return null;
+    }
+  }
+
+  // Valida palpite: dicionário local primeiro, depois Wikicionário com cache.
+  async function termoIsValidWord(guessNorm) {
+    if (TERMO_DICT.has(guessNorm)) return true;
+    if (termoApiValidCache.has(guessNorm)) return true;
+    if (termoSession.boards.some(b => b.norm === guessNorm)) return true;
+    for (const w of TERMO_WORDS) {
+      if (termoNormalize(w) === guessNorm) return true;
+    }
+    if (termoApiInvalidCache.has(guessNorm)) return false;
+    // Consulta API
+    const apiResult = await termoApiCheck(guessNorm);
+    if (apiResult === true) {
+      termoApiValidCache.add(guessNorm);
+      termoSaveApiCache();
+      return true;
+    }
+    if (apiResult === false) {
+      termoApiInvalidCache.add(guessNorm);
+      termoSaveApiCache();
+      return false;
+    }
+    // Erro de rede: aceita (não bloqueia jogador)
+    return true;
+  }
+
+  function termoEvaluate(guessNorm, answerNorm) {
+    const len = guessNorm.length;
+    const result = new Array(len).fill('absent');
+    const ans = answerNorm.split('');
+    // primeira passada: greens (consumir letras correspondidas)
+    for (let i = 0; i < len; i++) {
+      if (guessNorm[i] === ans[i]) {
+        result[i] = 'correct';
+        ans[i] = null;
+      }
+    }
+    // segunda passada: yellows
+    for (let i = 0; i < len; i++) {
+      if (result[i] === 'correct') continue;
+      const j = ans.indexOf(guessNorm[i]);
+      if (j !== -1) {
+        result[i] = 'present';
+        ans[j] = null;
+      }
+    }
+    return result;
+  }
+
+  function termoSavedKey(mode, dateKey, hardMode) {
+    return mode + '|' + dateKey + (hardMode ? '|H' : '');
+  }
+
+  function termoLoadSession(dateKey, mode, hardMode) {
+    const state = loadTermoState();
+    const key = termoSavedKey(mode, dateKey, hardMode);
+    const saved = (state.sessions && state.sessions[key]) || null;
+    const words = termoBoardsForDay(dateKey, mode);
+    const wordLen = termoNormalize(words[0]).length;
+    const config = TERMO_MODES[mode];
+
+    const boards = words.map((w, i) => {
+      const norm = termoNormalize(w);
+      let done = false, win = false, foundAt = null;
+      if (saved && saved.boards && saved.boards[i]) {
+        done = saved.boards[i].done;
+        win = saved.boards[i].win;
+        foundAt = saved.boards[i].foundAt;
+      }
+      return { word: w, norm, done, win, foundAt };
+    });
+
+    termoSession = {
+      dateKey,
+      mode,
+      hardMode: !!hardMode,
+      boards,
+      guesses: saved ? saved.guesses.map(g => ({
+        letters: g.letters.slice(),
+        results: g.results.map(r => r.slice())
+      })) : [],
+      currentCol: 0,
+      done: saved ? !!saved.done : false,
+      win: saved ? !!saved.win : false,
+      boardKeyStates: boards.map(() => ({})),
+      startedAt: saved ? saved.startedAt : null,
+      finishedAt: saved ? saved.finishedAt : null,
+      submittedScore: saved ? !!saved.submittedScore : false
+    };
+    // Reset draft pra novo modo
+    termoDraft = null;
+
+    // Recalcular boardKeyStates a partir dos guesses salvos
+    for (const g of termoSession.guesses) {
+      termoSession.boards.forEach((b, bi) => {
+        if (g.results[bi]) termoUpdateKeyStateForBoard(bi, g.letters.join(''), g.results[bi]);
+      });
+    }
+
+    document.documentElement.style.setProperty('--word-length', wordLen);
+    document.documentElement.style.setProperty('--termo-rows', termoMaxAttempts(mode));
+    document.body.dataset.termoMode = mode;
+
+    const label = document.getElementById('termoLabel');
+    if (label) {
+      const d = new Date(dateKey + 'T00:00:00');
+      const dd = String(d.getDate()).padStart(2, '0');
+      const mm = String(d.getMonth() + 1).padStart(2, '0');
+      const yy = String(d.getFullYear()).slice(-2);
+      const today = termoDateKey();
+      const labelText = dateKey === today ? 'HOJE — ' + dd + '/' + mm : dd + '/' + mm + '/' + yy;
+      label.textContent = 'PALAVRA DO DIA · ' + labelText;
+    }
+
+    // Update mode tabs
+    document.querySelectorAll('.termo-mode-tab').forEach(t => {
+      t.classList.toggle('active', t.dataset.mode === mode);
+    });
+    // Update hard checkbox
+    const hardCheck = document.getElementById('termoHardCheck');
+    if (hardCheck) hardCheck.checked = !!hardMode;
+    // Update day arrows
+    const prev = document.getElementById('termoPrevDay');
+    const next = document.getElementById('termoNextDay');
+    if (prev) prev.disabled = termoDaysSinceLaunch(dateKey) <= 0;
+    if (next) next.disabled = dateKey >= termoDateKey();
+
+    termoBuildBoard();
+    // Reconstruir teclado se a quantidade de boards mudou (modo diferente)
+    const existingKey = document.querySelector('#termoKeyboard .termo-key');
+    const existingSegs = existingKey ? existingKey.querySelectorAll('.key-seg').length : -1;
+    if (!existingKey || existingSegs !== boards.length) termoBuildKeyboard();
+    termoRefreshBoard();
+    termoUpdateAttemptsLabel();
+    termoRefreshKeyboard();
+    termoUpdateResultCard();
+  }
+
+  // Convenience: init com hoje, solo, hard mode salvo
+  function termoInit() {
+    const state = loadTermoState();
+    const hardMode = !!state.hardMode;
+    const lastMode = state.lastMode || 'solo';
+    termoLoadSession(state.lastDateKey || termoDateKey(), lastMode, hardMode);
+  }
+
+  function termoBuildBoard() {
+    const host = document.getElementById('termoBoard');
+    if (!host) return;
+    host.innerHTML = '';
+    const len = termoSession.boards[0].norm.length;
+    const maxAttempts = termoMaxAttempts(termoSession.mode);
+    termoSession.boards.forEach((b, bi) => {
+      const sub = document.createElement('div');
+      sub.className = 'termo-subboard';
+      sub.dataset.board = bi;
+      const grid = document.createElement('div');
+      grid.className = 'termo-grid';
+      grid.dataset.board = bi;
+      for (let r = 0; r < maxAttempts; r++) {
+        for (let c = 0; c < len; c++) {
+          const cell = document.createElement('div');
+          cell.className = 'termo-cell';
+          cell.dataset.row = r;
+          cell.dataset.col = c;
+          cell.dataset.board = bi;
+          cell.addEventListener('click', () => termoSelectCell(c));
+          grid.appendChild(cell);
+        }
+      }
+      sub.appendChild(grid);
+      host.appendChild(sub);
+    });
+  }
+
+  const TERMO_KB_ROWS = [
+    ['Q','W','E','R','T','Y','U','I','O','P'],
+    ['A','S','D','F','G','H','J','K','L'],
+    ['ENTER','Z','X','C','V','B','N','M','BACK']
+  ];
+
+  function termoBuildKeyboard() {
+    const kb = document.getElementById('termoKeyboard');
+    if (!kb) return;
+    kb.innerHTML = '';
+    const numBoards = termoSession.boards.length;
+    for (const row of TERMO_KB_ROWS) {
+      const rowEl = document.createElement('div');
+      rowEl.className = 'termo-keyboard-row';
+      for (const key of row) {
+        const btn = document.createElement('button');
+        btn.type = 'button';
+        btn.className = 'termo-key';
+        if (key === 'ENTER' || key === 'BACK') btn.classList.add('wide');
+        btn.dataset.key = key;
+        // Segments overlay (per-board color)
+        if (key !== 'ENTER' && key !== 'BACK') {
+          const segs = document.createElement('div');
+          segs.className = 'key-segments';
+          for (let i = 0; i < numBoards; i++) {
+            const seg = document.createElement('span');
+            seg.className = 'key-seg';
+            seg.dataset.board = i;
+            segs.appendChild(seg);
+          }
+          btn.appendChild(segs);
+        }
+        // Text label on top
+        const lbl = document.createElement('span');
+        lbl.className = 'key-text';
+        lbl.textContent = key === 'BACK' ? '⌫' : key;
+        btn.appendChild(lbl);
+        btn.addEventListener('click', () => {
+          if (key === 'ENTER') termoSubmit();
+          else if (key === 'BACK') termoBackspace();
+          else termoInputLetter(key);
+        });
+        rowEl.appendChild(btn);
+      }
+      kb.appendChild(rowEl);
+    }
+  }
+
+  function termoCurrentRow() { return termoSession.guesses.length; }
+  function termoCurrentLetters() {
+    const len = termoSession.boards[0].norm.length;
+    // Em progresso? Pega last guess se ainda não submetida (caso usemos in-progress array)
+    // Como guesses só guarda submetidas, retornamos draft separado:
+    return (termoDraft || new Array(len).fill('')).slice();
+  }
+  let termoDraft = null;
+
+  function termoEnsureDraft() {
+    const len = termoSession.boards[0].norm.length;
+    if (!termoDraft || termoDraft.length !== len) {
+      termoDraft = new Array(len).fill('');
+    }
+  }
+
+  function termoSelectCell(c) {
+    if (termoSession.done) return;
+    termoSession.currentCol = c;
+    termoRefreshBoard();
+  }
+
+  function termoInputLetter(letter) {
+    if (termoSession.done) return;
+    if (!/^[A-Z]$/.test(letter)) return;
+    termoEnsureDraft();
+    const len = termoDraft.length;
+    termoDraft[termoSession.currentCol] = letter;
+    let next = termoSession.currentCol + 1;
+    while (next < len && termoDraft[next] !== '' && termoDraft[next] != null) next++;
+    if (next < len) termoSession.currentCol = next;
+    termoRefreshBoard();
+  }
+
+  function termoBackspace() {
+    if (termoSession.done) return;
+    termoEnsureDraft();
+    if (termoDraft[termoSession.currentCol]) {
+      termoDraft[termoSession.currentCol] = '';
+    } else if (termoSession.currentCol > 0) {
+      termoSession.currentCol--;
+      termoDraft[termoSession.currentCol] = '';
+    }
+    termoRefreshBoard();
+  }
+
+  function termoRefreshBoard() {
+    const len = termoSession.boards[0].norm.length;
+    const maxAttempts = termoMaxAttempts(termoSession.mode);
+    const currentRow = termoCurrentRow();
+    termoEnsureDraft();
+    termoSession.boards.forEach((b, bi) => {
+      const grid = document.querySelector('.termo-grid[data-board="' + bi + '"]');
+      if (!grid) return;
+      const cells = grid.querySelectorAll('.termo-cell');
+      // Clear all
+      for (let i = 0; i < cells.length; i++) {
+        cells[i].className = 'termo-cell';
+        cells[i].textContent = '';
+      }
+      // Render submitted guesses
+      termoSession.guesses.forEach((g, gi) => {
+        if (b.done && gi > b.foundAt) {
+          // Após esse board ter sido encontrado, não mostra novos guesses pra ele
+          return;
+        }
+        for (let c = 0; c < len; c++) {
+          const cell = cells[gi * len + c];
+          if (!cell) continue;
+          cell.textContent = g.letters[c] || '';
+          if (g.results[bi] && g.results[bi][c]) cell.classList.add(g.results[bi][c]);
+          if (g.letters[c]) cell.classList.add('filled');
+        }
+      });
+      // Render current draft row (se board ainda não encontrado e jogo ainda ativo)
+      if (!termoSession.done && !b.done && currentRow < maxAttempts) {
+        for (let c = 0; c < len; c++) {
+          const cell = cells[currentRow * len + c];
+          if (!cell) continue;
+          if (termoDraft[c]) {
+            cell.textContent = termoDraft[c];
+            cell.classList.add('filled');
+          }
+          if (c === termoSession.currentCol) cell.classList.add('selected');
+        }
+      }
+      // Mark sub-board as won (visual fade?)
+      const sub = grid.closest('.termo-subboard');
+      if (sub) sub.classList.toggle('won', b.done && b.win);
+    });
+  }
+
+  function termoShakeCurrentRow() {
+    const currentRow = termoCurrentRow();
+    document.querySelectorAll('.termo-cell[data-row="' + currentRow + '"]').forEach(c => {
+      c.style.animation = 'termoShake 0.4s ease';
+      setTimeout(() => c.style.animation = '', 440);
+    });
+  }
+
+  function termoCheckHardMode(guessNorm) {
+    if (!termoSession.hardMode) return { ok: true };
+    // Coletar restrições por board: para cada board não-feito, validar greens/yellows
+    for (const b of termoSession.boards) {
+      if (b.done) continue;
+      // Greens fixos por posição, yellows requeridas
+      const fixed = {}; // pos -> letra
+      const required = {}; // letra -> count
+      for (const g of termoSession.guesses) {
+        const r = g.results[termoSession.boards.indexOf(b)];
+        if (!r) continue;
+        const countInGuess = {};
+        for (let i = 0; i < r.length; i++) {
+          const L = g.letters[i];
+          if (r[i] === 'correct') {
+            fixed[i] = L;
+            countInGuess[L] = (countInGuess[L] || 0) + 1;
+          } else if (r[i] === 'present') {
+            countInGuess[L] = (countInGuess[L] || 0) + 1;
+          }
+        }
+        for (const L in countInGuess) {
+          if ((required[L] || 0) < countInGuess[L]) required[L] = countInGuess[L];
+        }
+      }
+      // Check fixed
+      for (const pos in fixed) {
+        if (guessNorm[+pos] !== fixed[pos]) {
+          return { ok: false, msg: 'A letra ' + fixed[pos] + ' deve estar na posição ' + (+pos + 1) + '.' };
+        }
+      }
+      // Check required count
+      for (const L in required) {
+        const c = (guessNorm.match(new RegExp(L, 'g')) || []).length;
+        if (c < required[L]) {
+          return { ok: false, msg: 'A palavra precisa incluir a letra ' + L + '.' };
+        }
+      }
+    }
+    return { ok: true };
+  }
+
+  let termoSubmitting = false;
+  async function termoSubmit() {
+    if (termoSession.done) return;
+    if (termoSubmitting) return; // evita double-submit enquanto valida
+    const len = termoSession.boards[0].norm.length;
+    const currentRow = termoCurrentRow();
+    const maxAttempts = termoMaxAttempts(termoSession.mode);
+    if (currentRow >= maxAttempts) return;
+    termoEnsureDraft();
+    if (termoDraft.filter(x => x).length < len) {
+      termoShakeCurrentRow();
+      showToast('Palavra incompleta', 'Faltam letras pra fechar a palavra.', { duration: 2200 });
+      return;
+    }
+    const guessNorm = termoDraft.join('');
+    // Validação: palavra deve existir (local + API com cache)
+    termoSubmitting = true;
+    const isValid = await termoIsValidWord(guessNorm);
+    termoSubmitting = false;
+    if (!isValid) {
+      termoShakeCurrentRow();
+      showToast('Palavra inválida', '"' + guessNorm + '" não está no dicionário.', { duration: 2500 });
+      return;
+    }
+    // Hard mode check
+    const hardCheck = termoCheckHardMode(guessNorm);
+    if (!hardCheck.ok) {
+      termoShakeCurrentRow();
+      showToast('Modo difícil', hardCheck.msg, { duration: 2500 });
+      return;
+    }
+    // Avalia contra cada board
+    const results = termoSession.boards.map(b => termoEvaluate(guessNorm, b.norm));
+    termoSession.guesses.push({ letters: termoDraft.slice(), results });
+    if (!termoSession.startedAt) termoSession.startedAt = Date.now();
+    // Atualiza estados dos boards e keyState per-board
+    termoSession.boards.forEach((b, bi) => {
+      if (!b.done && results[bi].every(s => s === 'correct')) {
+        b.done = true; b.win = true; b.foundAt = currentRow;
+      }
+      termoUpdateKeyStateForBoard(bi, guessNorm, results[bi]);
+    });
+    // Reset draft + col
+    termoDraft = new Array(len).fill('');
+    termoSession.currentCol = 0;
+
+    // Anima flip de cada célula com cor atualizando NO momento do meio do flip.
+    // Cada célula vira individualmente com delay escalonado.
+    const FLIP_MS = 600;
+    const STEP_MS = 80;
+    termoSession.boards.forEach((b, bi) => {
+      const grid = document.querySelector('.termo-grid[data-board="' + bi + '"]');
+      if (!grid) return;
+      const cells = grid.querySelectorAll('.termo-cell');
+      // Se já estava feito antes desta tentativa, não anima nesse board
+      if (b.foundAt !== currentRow && b.done && b.foundAt < currentRow) return;
+      for (let c = 0; c < len; c++) {
+        const cell = cells[currentRow * len + c];
+        if (!cell) continue;
+        const delay = c * STEP_MS;
+        cell.style.animationDelay = delay + 'ms';
+        cell.classList.remove('correct','present','absent','filled','selected');
+        cell.textContent = termoSession.guesses[currentRow].letters[c] || '';
+        if (termoSession.guesses[currentRow].letters[c]) cell.classList.add('filled');
+        cell.classList.add('revealing');
+        // No meio do flip (50% da animação = FLIP_MS/2 ms) aplica a cor
+        const half = delay + FLIP_MS / 2;
+        const colorClass = results[bi][c];
+        setTimeout(() => {
+          cell.classList.add(colorClass);
+        }, half);
+        // Ao fim, remove a classe revealing pra limpar animation-delay
+        setTimeout(() => {
+          cell.classList.remove('revealing');
+          cell.style.animationDelay = '';
+        }, delay + FLIP_MS);
+      }
+    });
+
+    // Determinar fim de jogo
+    const allWon = termoSession.boards.every(b => b.win);
+    const newRow = termoSession.guesses.length;
+    if (allWon) {
+      termoSession.done = true;
+      termoSession.win = true;
+      termoSession.finishedAt = Date.now();
+    } else if (newRow >= maxAttempts) {
+      termoSession.done = true;
+      termoSession.win = false;
+      termoSession.finishedAt = Date.now();
+    }
+
+    termoSaveSession();
+    termoUpdateAttemptsLabel();
+    // Após todas as flips terminarem, refresh keyboard e card.
+    // Não chamamos termoRefreshBoard() aqui pra não sobrescrever as cores
+    // que já foram aplicadas durante a animação.
+    const totalAnim = (len - 1) * STEP_MS + FLIP_MS + 100;
+    setTimeout(() => {
+      // Sub-board fade out (won)
+      termoSession.boards.forEach((b, bi) => {
+        if (b.done && b.win) {
+          const sub = document.querySelector('.termo-subboard[data-board="' + bi + '"]');
+          if (sub) sub.classList.add('won');
+        }
+      });
+      termoRefreshKeyboard();
+      // Re-render do board pra render próxima linha em progresso (com cursor)
+      // mas preserva as cores das células já reveladas (refresh é idempotente).
+      termoRefreshBoard();
+      termoUpdateResultCard();
+      if (termoSession.done && termoSession.win && !termoSession.submittedScore) {
+        termoMaybeSubmitToCloud();
+      }
+    }, totalAnim);
+  }
+
+  function termoUpdateAttemptsLabel() {
+    const el = document.getElementById('termoAttempts');
+    if (!el) return;
+    const max = termoMaxAttempts(termoSession.mode);
+    el.textContent = termoSession.guesses.length + '/' + max;
+  }
+
+  function termoUpdateKeyStateForBoard(boardIdx, guessNorm, result) {
+    const priority = { correct: 3, present: 2, absent: 1 };
+    if (!termoSession.boardKeyStates) termoSession.boardKeyStates = [];
+    if (!termoSession.boardKeyStates[boardIdx]) termoSession.boardKeyStates[boardIdx] = {};
+    const ks = termoSession.boardKeyStates[boardIdx];
+    for (let i = 0; i < guessNorm.length; i++) {
+      const L = guessNorm[i];
+      const newState = result[i];
+      const cur = ks[L];
+      if (!cur || priority[newState] > priority[cur]) {
+        ks[L] = newState;
+      }
+    }
+  }
+
+  function termoRefreshKeyboard() {
+    const keys = document.querySelectorAll('#termoKeyboard .termo-key');
+    const numBoards = termoSession.boards.length;
+    // Boards ainda ativos (não resolvidos) — só esses contribuem com cor pro teclado
+    const activeBoardIndexes = termoSession.boards
+      .map((b, i) => b.done ? -1 : i)
+      .filter(i => i >= 0);
+    keys.forEach(k => {
+      const letter = k.dataset.key;
+      const segs = k.querySelectorAll('.key-seg');
+      let anyColored = false;
+      let allAbsent = segs.length > 0;
+      segs.forEach((seg, bi) => {
+        seg.classList.remove('correct','present','absent');
+        // Se o board já foi resolvido, o segmento do teclado fica neutro
+        const board = termoSession.boards[bi];
+        if (board && board.done) {
+          allAbsent = false;
+          return;
+        }
+        const ks = (termoSession.boardKeyStates && termoSession.boardKeyStates[bi]) || {};
+        const state = ks[letter];
+        if (state) {
+          seg.classList.add(state);
+          if (state !== 'absent') { anyColored = true; allAbsent = false; }
+        } else {
+          allAbsent = false;
+        }
+      });
+      k.classList.toggle('has-color', anyColored);
+      k.classList.toggle('all-absent', allAbsent);
+    });
+  }
+
+  function termoSaveSession() {
+    const state = loadTermoState();
+    state.sessions = state.sessions || {};
+    state.lastDateKey = termoSession.dateKey;
+    state.lastMode = termoSession.mode;
+    state.hardMode = termoSession.hardMode;
+    const key = termoSavedKey(termoSession.mode, termoSession.dateKey, termoSession.hardMode);
+    state.sessions[key] = {
+      mode: termoSession.mode,
+      dateKey: termoSession.dateKey,
+      hardMode: termoSession.hardMode,
+      boards: termoSession.boards.map(b => ({
+        word: b.word, done: b.done, win: b.win, foundAt: b.foundAt
+      })),
+      guesses: termoSession.guesses.map(g => ({
+        letters: g.letters.slice(),
+        results: g.results.map(r => r.slice())
+      })),
+      done: termoSession.done,
+      win: termoSession.win,
+      startedAt: termoSession.startedAt,
+      finishedAt: termoSession.finishedAt,
+      submittedScore: termoSession.submittedScore
+    };
+    // Update stats per mode
+    state.stats = state.stats || {};
+    state.stats[termoSession.mode] = state.stats[termoSession.mode] || {
+      played: 0, wins: 0, currentStreak: 0, maxStreak: 0, distribution: [0,0,0,0,0,0,0,0,0]
+    };
+    const stats = state.stats[termoSession.mode];
+    state.recorded = state.recorded || {};
+    const rkey = termoSession.mode + '|' + termoSession.dateKey + (termoSession.hardMode ? '|H' : '');
+    if (termoSession.done && !state.recorded[rkey]) {
+      stats.played++;
+      if (termoSession.win) {
+        stats.wins++;
+        const att = termoSession.guesses.length;
+        const max = termoMaxAttempts(termoSession.mode);
+        if (att >= 1 && att <= max) stats.distribution[att - 1] = (stats.distribution[att - 1] || 0) + 1;
+        const yesterday = (() => {
+          const d = new Date(termoSession.dateKey + 'T00:00:00');
+          d.setDate(d.getDate() - 1);
+          return termoDateKey(d);
+        })();
+        const yKey = termoSession.mode + '|' + yesterday + (termoSession.hardMode ? '|H' : '');
+        if (state.recorded[yKey] && state.recorded[yKey].win) {
+          stats.currentStreak++;
+        } else {
+          stats.currentStreak = 1;
+        }
+        if (stats.currentStreak > stats.maxStreak) stats.maxStreak = stats.currentStreak;
+      } else {
+        stats.currentStreak = 0;
+      }
+      state.recorded[rkey] = { win: termoSession.win };
+    }
+    try { localStorage.setItem(TERMO_STORAGE_KEY, JSON.stringify(state)); } catch (e) {}
+  }
+
+  function termoBuildShare() {
+    const dd = termoSession.dateKey.slice(8, 10);
+    const mm = termoSession.dateKey.slice(5, 7);
+    const modeLbl = TERMO_MODES[termoSession.mode].label;
+    const hardLbl = termoSession.hardMode ? ' · Difícil' : '';
+    const max = termoMaxAttempts(termoSession.mode);
+    const head = 'Jornal Atlas — Palavra do Dia · ' + dd + '/' + mm + ' · ' + modeLbl + hardLbl;
+    const tries = termoSession.win ? (termoSession.guesses.length + '/' + max) : ('X/' + max);
+    // Em multi-board, mostra cada linha juntando cores de cada board com gap
+    const len = termoSession.boards[0].norm.length;
+    const lines = termoSession.guesses.map(g => {
+      const parts = g.results.map(r => r.map(s => s === 'correct' ? '🟩' : s === 'present' ? '🟨' : '⬛').join(''));
+      return parts.join('  ');
+    }).join('\n');
+    return head + '  ' + tries + '\n' + lines + '\nhttps://cacapalavras-atlas.vercel.app/';
+  }
+
+  function termoUpdateResultCard() {
+    let host = document.getElementById('termoStatus');
+    if (!host) return;
+    if (!termoSession.done) { host.innerHTML = ''; return; }
+    const max = termoMaxAttempts(termoSession.mode);
+    const usedAttempts = termoSession.guesses.length;
+    const headline = termoSession.win
+      ? 'Você venceu em ' + usedAttempts + ' tentativa' + (usedAttempts === 1 ? '' : 's') + '!'
+      : (termoSession.boards.length === 1 ? 'Quase! A palavra era:' : 'Quase! As palavras eram:');
+    const wordsHtml = termoSession.boards.map(b =>
+      `<div class="word-reveal">${b.word}</div>`
+    ).join('');
+    const isToday = termoSession.dateKey === termoDateKey();
+    const subline = termoSession.win
+      ? (isToday ? 'Volte amanhã para uma nova palavra.' : 'Jogue outro dia ou hoje.')
+      : (isToday ? 'Não desanime, amanhã tem outra.' : 'Tente outro dia.');
+    host.innerHTML = `
+      <div class="termo-result">
+        <h3>${headline}</h3>
+        ${wordsHtml}
+        <p>${subline}</p>
+        <div class="actions">
+          <button class="ctrl-btn" id="termoShareBtn" type="button">Copiar pro Discord</button>
+          <button class="ctrl-btn" id="termoOpenStatsBtn" type="button">Ver estatísticas</button>
+          <button class="ctrl-btn" id="termoOpenRankBtn" type="button">Ver ranking</button>
+        </div>
+        <div class="next-time" id="termoCountdown"></div>
+      </div>
+    `;
+    document.getElementById('termoShareBtn').addEventListener('click', async () => {
+      const text = termoBuildShare();
+      const btn = document.getElementById('termoShareBtn');
+      try {
+        await navigator.clipboard.writeText(text);
+        btn.textContent = '✓ Copiado!';
+        setTimeout(() => btn.textContent = 'Copiar pro Discord', 2000);
+      } catch (e) {
+        btn.textContent = '× Falhou';
+      }
+    });
+    document.getElementById('termoOpenStatsBtn').addEventListener('click', () => openModal('termoStats'));
+    document.getElementById('termoOpenRankBtn').addEventListener('click', () => openModal('termoRank'));
+    if (isToday) termoCountdownTick();
+  }
+
+  function termoCountdownTick() {
+    const el = document.getElementById('termoCountdown');
+    if (!el) return;
+    const now = new Date();
+    const tomorrow = new Date(now.getFullYear(), now.getMonth(), now.getDate() + 1);
+    const ms = tomorrow - now;
+    const h = Math.floor(ms / 3600000);
+    const m = Math.floor((ms % 3600000) / 60000);
+    const s = Math.floor((ms % 60000) / 1000);
+    el.textContent = 'Próxima palavra em ' + String(h).padStart(2,'0') + ':' + String(m).padStart(2,'0') + ':' + String(s).padStart(2,'0');
+    setTimeout(termoCountdownTick, 1000);
+  }
+
+  function termoRenderStats() {
+    const state = loadTermoState();
+    const stats = (state.stats && state.stats[termoSession.mode]) || {
+      played: 0, wins: 0, currentStreak: 0, maxStreak: 0, distribution: [0,0,0,0,0,0,0,0,0]
+    };
+    document.getElementById('statPlayed').textContent = stats.played;
+    document.getElementById('statWinPct').textContent = stats.played ? Math.round(100 * stats.wins / stats.played) : 0;
+    document.getElementById('statStreak').textContent = stats.currentStreak;
+    document.getElementById('statMaxStreak').textContent = stats.maxStreak;
+    const max = Math.max(1, ...stats.distribution);
+    const recentAttempts = termoSession.done && termoSession.win ? termoSession.guesses.length : null;
+    const maxAtt = termoMaxAttempts(termoSession.mode);
+    const distSlice = stats.distribution.slice(0, maxAtt);
+    const html = distSlice.map((v, i) => {
+      const pct = Math.round(v / max * 100);
+      const recent = (i + 1) === recentAttempts ? ' recent' : '';
+      return `<div class="dist-row${recent}"><span class="lbl">${i+1}</span><div class="bar" style="width:${Math.max(6, pct)}%">${v}</div></div>`;
+    }).join('');
+    document.getElementById('distBars').innerHTML = html;
+  }
+
+  // Help modal — conteúdo por modo
+  function termoBuildHelpContent() {
+    const mode = termoSession.mode;
+    const config = TERMO_MODES[mode];
+    const maxAtt = termoMaxAttempts(mode);
+    const boards = config.boards;
+
+    let intro;
+    if (mode === 'solo') {
+      intro = `Descubra a palavra do dia em <b>${maxAtt} tentativas</b>.`;
+    } else {
+      const boardsTxt = boards === 2 ? 'duas palavras' : 'quatro palavras';
+      const quadrosTxt = boards === 2 ? 'dois quadros' : 'quatro quadros';
+      intro = `Descubra as <b>${boardsTxt}</b> do dia em <b>${maxAtt} tentativas</b>. Cada palpite vale para os ${quadrosTxt} simultaneamente.`;
+    }
+
+    const html = `
+      <p class="help-intro">${intro}</p>
+      <p class="help-tip">Use o teclado físico ou clique nas casas pra digitar direto numa célula específica.</p>
+      <ul class="help-rules">
+        <li><b class="hint-correct">Verde</b>: letra correta, na posição correta.</li>
+        <li><b class="hint-present">Amarelo</b>: letra existe na palavra, mas em outra posição.</li>
+        <li><b class="hint-absent">Cinza</b>: letra não está na palavra.</li>
+        <li>Letras com <b>acento</b> são preenchidas automaticamente.</li>
+        <li>Uma palavra pode ter <b>letras repetidas</b>.</li>
+        <li>Uma palavra <b>nova a cada dia</b>.</li>
+      </ul>
+      ${termoSession.hardMode ? '<p class="help-hard"><b>Modo difícil ativo:</b> você precisa usar todas as dicas verdes/amarelas em palpites seguintes.</p>' : ''}
+    `;
+    const titleSuffix = mode === 'solo' ? '' : ' — ' + TERMO_MODES[mode].label;
+    const titleEl = document.getElementById('termoHelpTitle');
+    if (titleEl) titleEl.textContent = 'Como jogar' + titleSuffix;
+    const contentEl = document.getElementById('termoHelpContent');
+    if (contentEl) contentEl.innerHTML = html;
+  }
+
+  let termoHelpShownThisSession = false;
+  function termoMaybeAutoShowHelp() {
+    // Auto-abre no primeiro acesso à seção e em cada troca de modo
+    if (!document.getElementById('termoHelpBackdrop')) return;
+    termoBuildHelpContent();
+    openModal('termoHelp');
+  }
+
+  // Arquivo
+  function termoOpenArchive() {
+    const host = document.getElementById('termoArchiveList');
+    if (!host) return;
+    const today = termoDateKey();
+    const state = loadTermoState();
+    const recorded = state.recorded || {};
+    const days = termoDaysSinceLaunch(today) + 1;
+    const items = [];
+    for (let i = days - 1; i >= 0; i--) {
+      const d = new Date(TERMO_START_DATE + 'T00:00:00');
+      d.setDate(d.getDate() + i);
+      const dk = termoDateKey(d);
+      const rkey = termoSession.mode + '|' + dk + (termoSession.hardMode ? '|H' : '');
+      const rec = recorded[rkey];
+      let status = 'não jogado';
+      let cls = '';
+      if (rec && rec.win) { status = 'venceu'; cls = 'won'; }
+      else if (rec && !rec.win) { status = 'perdeu'; cls = 'lost'; }
+      if (dk === today) cls += ' today';
+      const dd = dk.slice(8,10), mm = dk.slice(5,7);
+      items.push(`<button type="button" class="archive-item ${cls}" data-date="${dk}">
+        <span class="ai-date">${dd}/${mm}</span>
+        <span class="ai-status">${status}</span>
+      </button>`);
+    }
+    host.innerHTML = items.join('');
+    host.querySelectorAll('.archive-item').forEach(item => {
+      item.addEventListener('click', () => {
+        const dk = item.dataset.date;
+        closeModal('termoArchive');
+        termoLoadSession(dk, termoSession.mode, termoSession.hardMode);
+        termoSaveSession();
+      });
+    });
+  }
+
+  // Ranking (Firebase)
+  async function termoMaybeSubmitToCloud() {
+    if (!cloudReady || !authUser || !authProfile) return;
+    if (!termoSession.win) return;
+    if (termoSession.submittedScore) return;
+    if (!window.atlasCloud || !window.atlasCloud.submitTermoScore) return;
+    try {
+      const durationMs = termoSession.finishedAt && termoSession.startedAt
+        ? (termoSession.finishedAt - termoSession.startedAt) : null;
+      await window.atlasCloud.submitTermoScore(
+        authUser.uid, authProfile.nick,
+        termoSession.dateKey, termoSession.mode, termoSession.hardMode,
+        termoSession.guesses.length, durationMs || 0
+      );
+      termoSession.submittedScore = true;
+      termoSaveSession();
+    } catch (err) {
+      console.warn('termo score submit failed', err);
+    }
+  }
+
+  let termoRankMode = 'speed';
+  async function termoLoadRanking() {
+    if (!cloudReady || !window.atlasCloud || !window.atlasCloud.getTermoRanking) return;
+    const dayLabel = (() => {
+      const d = new Date(termoSession.dateKey + 'T00:00:00');
+      const dd = String(d.getDate()).padStart(2, '0');
+      const mm = String(d.getMonth() + 1).padStart(2, '0');
+      const modeLbl = TERMO_MODES[termoSession.mode].label.toUpperCase();
+      return dd + '/' + mm + ' · ' + modeLbl + (termoSession.hardMode ? ' · DIFÍCIL' : '');
+    })();
+    document.getElementById('termoRankDay').textContent = dayLabel;
+    const tbl = document.getElementById('termoRankTable');
+    const empty = document.getElementById('termoRankEmpty');
+    const loading = document.getElementById('termoRankLoading');
+    const valHeader = document.getElementById('termoRankColVal');
+    valHeader.textContent = termoRankMode === 'speed' ? 'Tempo' : 'Tentativas';
+    tbl.setAttribute('hidden', '');
+    empty.setAttribute('hidden', '');
+    loading.removeAttribute('hidden');
+    try {
+      const rows = await window.atlasCloud.getTermoRanking(
+        termoSession.dateKey, termoSession.mode, termoSession.hardMode, termoRankMode, 25
+      );
+      loading.setAttribute('hidden', '');
+      if (rows.length === 0) {
+        empty.removeAttribute('hidden');
+        return;
+      }
+      const myUid = authUser?.uid;
+      const tbody = document.getElementById('termoRankBody');
+      tbody.innerHTML = rows.map((r, i) => {
+        const pos = i + 1;
+        const posClass = pos <= 3 ? `pos-${pos}` : '';
+        const meClass = myUid && r.uid === myUid ? 'me' : '';
+        const valStr = termoRankMode === 'speed'
+          ? formatTime(r.durationMs || 0)
+          : (r.attempts + '/' + termoMaxAttempts(termoSession.mode));
+        return `<tr class="${meClass}">
+          <td class="rank-col-pos ${posClass}">${pos}</td>
+          <td>${escapeHTML(r.nick || '—')}</td>
+          <td class="rank-col-val">${valStr}</td>
+        </tr>`;
+      }).join('');
+      tbl.removeAttribute('hidden');
+    } catch (err) {
+      loading.setAttribute('hidden', '');
+      empty.textContent = 'Erro ao carregar: ' + (err.message || err.code || err);
+      empty.removeAttribute('hidden');
+    }
+  }
+
+  // Listeners do teclado físico
+  document.addEventListener('keydown', (e) => {
+    if (document.body.dataset.section !== 'termo') return;
+    if (document.querySelector('.modal-backdrop.show')) return;
+    if (e.ctrlKey || e.altKey || e.metaKey) return;
+    if (e.key === 'Enter') { e.preventDefault(); termoSubmit(); return; }
+    if (e.key === 'Backspace') { e.preventDefault(); termoBackspace(); return; }
+    if (e.key.length === 1 && /^[a-zA-Zà-úÀ-Ú]$/.test(e.key)) {
+      e.preventDefault();
+      const letter = termoNormalize(e.key)[0];
+      if (letter) termoInputLetter(letter);
+    }
+    if (e.key === 'ArrowLeft') {
+      if (termoSession.currentCol > 0) { termoSession.currentCol--; termoRefreshBoard(); }
+    }
+    if (e.key === 'ArrowRight') {
+      if (termoSession.boards[0] && termoSession.currentCol < termoSession.boards[0].norm.length - 1) {
+        termoSession.currentCol++; termoRefreshBoard();
+      }
+    }
+  });
+
+  // Botões de stats e help
+  document.getElementById('termoStatsBtn')?.addEventListener('click', () => openModal('termoStats'));
+  document.getElementById('termoHelpBtn')?.addEventListener('click', () => {
+    termoBuildHelpContent();
+    openModal('termoHelp');
+  });
+  document.getElementById('termoRankBtn')?.addEventListener('click', () => openModal('termoRank'));
+  document.getElementById('termoArchiveBtn')?.addEventListener('click', () => openModal('termoArchive'));
+
+  // Day navigation
+  document.getElementById('termoPrevDay')?.addEventListener('click', () => {
+    const d = new Date(termoSession.dateKey + 'T00:00:00');
+    d.setDate(d.getDate() - 1);
+    const dk = termoDateKey(d);
+    if (termoDaysSinceLaunch(dk) < 0) return;
+    termoLoadSession(dk, termoSession.mode, termoSession.hardMode);
+    termoSaveSession();
+  });
+  document.getElementById('termoNextDay')?.addEventListener('click', () => {
+    const d = new Date(termoSession.dateKey + 'T00:00:00');
+    d.setDate(d.getDate() + 1);
+    const dk = termoDateKey(d);
+    if (termoIsFutureDay(dk)) return;
+    termoLoadSession(dk, termoSession.mode, termoSession.hardMode);
+    termoSaveSession();
+  });
+
+  // Mode tabs — troca o modo e mostra o modal de ajuda do novo modo
+  document.querySelectorAll('.termo-mode-tab').forEach(tab => {
+    tab.addEventListener('click', () => {
+      const newMode = tab.dataset.mode;
+      if (newMode === termoSession.mode) return;
+      termoLoadSession(termoSession.dateKey, newMode, termoSession.hardMode);
+      termoSaveSession();
+      termoMaybeAutoShowHelp();
+    });
+  });
+
+  // Hard mode toggle
+  document.getElementById('termoHardCheck')?.addEventListener('change', (e) => {
+    const checked = e.target.checked;
+    // Só permite mudar antes da primeira tentativa (regra clássica)
+    if (termoSession.guesses.length > 0 && !termoSession.done) {
+      e.target.checked = !checked;
+      showToast('Modo difícil', 'Só dá pra ativar/desativar antes da primeira tentativa.', { duration: 2500 });
+      return;
+    }
+    termoLoadSession(termoSession.dateKey, termoSession.mode, checked);
+    termoSaveSession();
+  });
+
+  // Ranking modal tabs
+  document.querySelectorAll('#termoRankBackdrop .modal-tab').forEach(tab => {
+    tab.addEventListener('click', () => {
+      termoRankMode = tab.dataset.termoRank;
+      document.querySelectorAll('#termoRankBackdrop .modal-tab').forEach(t => t.classList.toggle('active', t === tab));
+      termoLoadRanking();
+    });
+  });
+
+  // Seção switcher
+  document.getElementById('sectionSwitcher')?.addEventListener('click', (e) => {
+    const btn = e.target.closest('.section-btn');
+    if (!btn) return;
+    const section = btn.dataset.section;
+    showSection(section);
+  });
+
+  function showSection(name) {
+    const previous = document.body.dataset.section;
+    document.body.dataset.section = name;
+    document.querySelectorAll('#sectionSwitcher .section-btn').forEach(b => {
+      b.classList.toggle('active', b.dataset.section === name);
+    });
+    try { localStorage.setItem('jornal-atlas-section', name); } catch (e) {}
+    if (name === 'termo') {
+      if (!termoSession.dateKey) termoInit();
+      // Mostra o modal de instruções na primeira vez que entra na seção (por load de página)
+      if (previous !== 'termo' && !termoHelpShownThisSession) {
+        termoHelpShownThisSession = true;
+        setTimeout(() => termoMaybeAutoShowHelp(), 250);
+      }
+    }
+  }
+
   // === Auth + Ranking (Firebase) ===
   let authUser = null;
   let authProfile = null;
@@ -2313,13 +4350,35 @@
     return String(s ?? '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
   }
 
+  const MODAL_IDS = {
+    auth: 'authBackdrop',
+    rank: 'rankBackdrop',
+    nick: 'nickBackdrop',
+    termoStats: 'termoStatsBackdrop',
+    termoHelp: 'termoHelpBackdrop',
+    termoArchive: 'termoArchiveBackdrop',
+    termoRank: 'termoRankBackdrop',
+    cacaArchive: 'cacaArchiveBackdrop'
+  };
   function openModal(name, opts = {}) {
-    const id = name === 'auth' ? 'authBackdrop' : name === 'rank' ? 'rankBackdrop' : 'nickBackdrop';
-    const bd = document.getElementById(id);
+    const id = MODAL_IDS[name];
+    const bd = id && document.getElementById(id);
     if (!bd) return;
     bd.setAttribute('aria-hidden', 'false');
     requestAnimationFrame(() => bd.classList.add('show'));
     if (name === 'rank') loadRanking();
+    if (name === 'termoStats') {
+      if (typeof termoRenderStats === 'function') termoRenderStats();
+    }
+    if (name === 'termoArchive') {
+      if (typeof termoOpenArchive === 'function') termoOpenArchive();
+    }
+    if (name === 'cacaArchive') {
+      if (typeof cacaOpenArchive === 'function') cacaOpenArchive();
+    }
+    if (name === 'termoRank') {
+      if (typeof termoLoadRanking === 'function') termoLoadRanking();
+    }
     if (name === 'nick') {
       const title = document.getElementById('nickTitle');
       const intro = document.getElementById('nickIntro');
@@ -2347,8 +4406,8 @@
     }
   }
   function closeModal(name) {
-    const id = name === 'auth' ? 'authBackdrop' : name === 'rank' ? 'rankBackdrop' : 'nickBackdrop';
-    const bd = document.getElementById(id);
+    const id = MODAL_IDS[name];
+    const bd = id && document.getElementById(id);
     if (!bd) return;
     bd.classList.remove('show');
     setTimeout(() => bd.setAttribute('aria-hidden', 'true'), 220);
@@ -2391,7 +4450,16 @@
   document.querySelectorAll('.modal-backdrop').forEach(bd => {
     bd.addEventListener('click', (e) => {
       if (e.target === bd) {
-        const map = { authBackdrop: 'auth', rankBackdrop: 'rank', nickBackdrop: 'nick' };
+        const map = {
+          authBackdrop: 'auth',
+          rankBackdrop: 'rank',
+          nickBackdrop: 'nick',
+          termoStatsBackdrop: 'termoStats',
+          termoHelpBackdrop: 'termoHelp',
+          termoArchiveBackdrop: 'termoArchive',
+          termoRankBackdrop: 'termoRank',
+          cacaArchiveBackdrop: 'cacaArchive'
+        };
         closeModal(map[bd.id]);
       }
     });
@@ -2685,6 +4753,15 @@
   } else {
     activateTab('04-05');
     renderDay('04-05');
+  }
+
+  // === Restore last section (caca / termo) ===
+  let initialSection = 'caca';
+  try { initialSection = localStorage.getItem('jornal-atlas-section') || 'caca'; } catch (e) {}
+  showSection(initialSection);
+  if (initialSection !== 'termo') {
+    // Pre-init termo silently so it loads instantly when user switches
+    setTimeout(() => { if (!termoSession.dateKey) termoInit(); }, 100);
   }
 </script>
 
