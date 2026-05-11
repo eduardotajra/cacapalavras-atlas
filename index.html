@@ -1268,6 +1268,8 @@
     display: flex;
     gap: 4px;
   }
+  /* Esconde wrapper se for único modo visível (Solo) */
+  .termo-mode-tabs:has(.termo-mode-tab:only-child) { display: none; }
   .termo-mode-tab {
     background: rgba(255, 240, 210, 0.5);
     border: 1.5px solid var(--ink);
@@ -2251,12 +2253,16 @@
   <section class="termo-section" id="termoSection">
     <div class="termo-page">
 
-      <!-- Top controls strip: modes + hard mode toggle -->
+      <!-- Top controls strip: modes + hard mode toggle.
+           Dueto e Quarteto desabilitados temporariamente — descomente os
+           buttons pra reativar quando quiser. -->
       <div class="termo-controls">
         <div class="termo-mode-tabs" role="tablist" aria-label="Modo de jogo">
           <button class="termo-mode-tab active" type="button" data-mode="solo" role="tab">Solo</button>
+          <!--
           <button class="termo-mode-tab" type="button" data-mode="dueto" role="tab">Dueto</button>
           <button class="termo-mode-tab" type="button" data-mode="quarteto" role="tab">Quarteto</button>
+          -->
         </div>
         <label class="termo-toggle">
           <input type="checkbox" id="termoHardCheck">
@@ -3212,13 +3218,17 @@
   }
 
   // === Termo (Palavra do Dia) ===
-  // Lista de palavras. Acentos preservados pra exibição,
+  // Lista de palavras da rotação diária. Acentos preservados pra exibição,
   // matching faz normalização. Edite à vontade.
   const TERMO_WORDS = [
-    'ATLAS', 'PRAIA', 'AREIA', 'NUVEM', 'NOITE', 'SONHO', 'MUNDO', 'TRONO',
-    'CHUVA', 'PEDRA', 'PRATA', 'VENTO', 'MAGIA', 'CARTA', 'LIVRO', 'BARCO',
-    'PEIXE', 'FOGO',  'OURO',  'JORNAL','OCEANO','ESTRELA','CASTELO','MARINHO',
-    'DESERTO','TÁRTARO','RÁDIO','MINAS','MIMIR','PINKY','ÁRVORE'
+    // Palavras tema Atlas / léxico geral
+    'ATLAS', 'PRAIA', 'AREIA', 'JORNAL', 'OCEANO', 'TEATRO', 'MARINHO',
+    'DESERTO', 'TÁRTARO', 'RÁDIO', 'MINAS', 'MIMIR', 'PINKY', 'ÁRVORE',
+    'GLORIA', 'PEIXE',
+    // Nicks / personagens da comunidade
+    'TYFOM', 'CINIM', 'SAMXP', 'SUSHI', 'TAKKE', 'MATUE', 'YUZZO', 'DANTE',
+    'PINXE', 'TREZE', 'LUBSS', 'MAGGI', 'TYPPE', 'RUIDO', 'EYZYR', 'NOTRE',
+    'AISHA', 'HIQUE', 'KAUAN', 'MEGAS'
   ];
   const TERMO_START_DATE = '2026-05-11'; // âncora pra cálculo do dia
   const TERMO_STORAGE_KEY = 'jornal-atlas-termo-v2';
@@ -3227,6 +3237,13 @@
     solo:    { boards: 1, extraAttempts: 0, label: 'Solo' },
     dueto:   { boards: 2, extraAttempts: 1, label: 'Dueto' },
     quarteto:{ boards: 4, extraAttempts: 3, label: 'Quarteto' }
+  };
+
+  // Palavra explícita por data (modo solo). Se não tiver entry pra data,
+  // cai no rotation TERMO_WORDS por dia desde TERMO_START_DATE.
+  // Formato: 'YYYY-MM-DD': 'PALAVRA' (com ou sem acento — é normalizado).
+  const TERMO_DAILY = {
+    // '2026-05-12': 'PRAIA',
   };
 
   // Dicionário de palavras válidas (normalizadas, sem acento, maiúsculas)
@@ -3298,6 +3315,8 @@
     const dayIndex = Math.round((day - start) / 86400000);
     const list = termoFilteredWords(mode);
     if (mode === 'solo') {
+      // Override explícito por data (TERMO_DAILY) tem prioridade
+      if (TERMO_DAILY[dateKey]) return [TERMO_DAILY[dateKey]];
       const idx = ((dayIndex % list.length) + list.length) % list.length;
       return [list[idx]];
     }
