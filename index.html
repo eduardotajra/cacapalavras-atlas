@@ -247,13 +247,13 @@
     to { filter: grayscale(0.85) brightness(0.55); }
   }
 
-  /* Fundo respirando */
-  body[data-section="caca"][data-active="13-05"] {
-    animation: bgBreath 7s ease-in-out infinite;
+  /* Fundo respirando — animado no .special-page (não no body) pra não quebrar scroll */
+  body[data-section="caca"][data-active="13-05"] .special-page {
+    animation: specialFade 1.8s ease, bgBreath 7s ease-in-out 1.8s infinite;
   }
   @keyframes bgBreath {
-    0%, 100% { filter: brightness(1); }
-    50%      { filter: brightness(0.86); }
+    0%, 100% { opacity: 1; }
+    50%      { opacity: 0.88; }
   }
 
   /* Typing cursor blink na frase */
