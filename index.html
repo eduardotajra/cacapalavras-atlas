@@ -5504,29 +5504,48 @@
   function setupCloud() {
     cloudReady = true;
     window.atlasCloud.onAuthChange(async (user) => {
-      authUser = user || null;
-      if (user) {
-        setAuthUI(); // shows "Carregando perfil..."
-        let profile = await fetchProfileWithRetry(user.uid);
-        if (profile) {
-          authProfile = profile;
-          setAuthUI();
-        } else {
-          // No profile in /users/{uid} — likely first Google login. Ask for a nick.
-          authProfile = null;
-          setAuthUI();
-          openModal('nick', { firstTime: true });
-          return;
-        }
-        // Submit any pending score from before login
-        if (pendingScoreSubmit) {
-          const { dayKey, timeMs } = pendingScoreSubmit;
-          pendingScoreSubmit = null;
-          submitScoreToCloud(dayKey, timeMs);
-        }
-      } else {
+      if (!user) {
+        // Logout: limpa estado local e recarrega para resetar memória
+        try {
+          localStorage.removeItem(STORAGE_KEY);
+          localStorage.removeItem('enigma_complete');
+          localStorage.removeItem('atlas-uid');
+        } catch(_) {}
+        authUser = null;
         authProfile = null;
         setAuthUI();
+        window.location.reload();
+        return;
+      }
+
+      // Login: se for conta diferente da última sessão, limpa estado
+      try {
+        const lastUid = localStorage.getItem('atlas-uid');
+        if (lastUid && lastUid !== user.uid) {
+          localStorage.removeItem(STORAGE_KEY);
+          localStorage.removeItem('enigma_complete');
+        }
+        localStorage.setItem('atlas-uid', user.uid);
+      } catch(_) {}
+
+      authUser = user;
+      setAuthUI(); // shows "Carregando perfil..."
+      let profile = await fetchProfileWithRetry(user.uid);
+      if (profile) {
+        authProfile = profile;
+        setAuthUI();
+      } else {
+        // No profile in /users/{uid} — likely first Google login. Ask for a nick.
+        authProfile = null;
+        setAuthUI();
+        openModal('nick', { firstTime: true });
+        return;
+      }
+      // Submit any pending score from before login
+      if (pendingScoreSubmit) {
+        const { dayKey, timeMs } = pendingScoreSubmit;
+        pendingScoreSubmit = null;
+        submitScoreToCloud(dayKey, timeMs);
       }
     });
   }
