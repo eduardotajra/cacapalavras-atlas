@@ -413,10 +413,10 @@
       <div class="card" data-idx="4">
         <div class="card-num">Campo V · de XIII</div>
         <div class="card-clue">
-          O dossier corrompido guarda uma verdade:<br>
-          o arquivo não mostra o que aconteceu,<br>
-          mostra o que foi construído para que<br>
-          você achasse que aconteceu.
+          O dia que o jornal não quis registrar<br>
+          ainda existe em algum lugar.<br>
+          Quem chegou até lá encontrou o que<br>
+          foi construído como reflexo do que nunca aconteceu.
         </div>
         <div class="card-input-wrap">
           <input class="card-input" type="text" maxlength="20" placeholder="resposta..." autocomplete="off" autocorrect="off" spellcheck="false">
@@ -493,10 +493,10 @@
       <div class="card" data-idx="9">
         <div class="card-num">Campo X · de XIII</div>
         <div class="card-clue">
-          O servidor fala antes da página aparecer.<br>
-          A maioria nunca escuta.<br>
-          Você precisa de ferramentas de desenvolvedor,<br>
-          da aba certa, e saber decodificar o que ele envia.
+          O servidor envia algo antes de qualquer página aparecer.<br>
+          Não está no código. Está na conversa<br>
+          entre o browser e o servidor.<br>
+          Aba Rede. Cabeçalhos de resposta. Decodifique.
         </div>
         <div class="card-input-wrap">
           <input class="card-input" type="text" maxlength="20" placeholder="resposta..." autocomplete="off" autocorrect="off" spellcheck="false">
@@ -662,6 +662,8 @@
   }, { passive: true });
 
   let alreadyFinished = false;
+  let unlockedAt12 = false;
+  try { if (localStorage.getItem('enigma_complete') === '1') unlockedAt12 = true; } catch(_) {}
 
   function updateProgress() {
     const n = solved.filter(Boolean).length;
@@ -669,6 +671,11 @@
     progFill.style.width = (n / TOTAL * 100) + '%';
     Array.from(dotsEl.children).forEach((d, i) => d.classList.toggle('done', solved[i]));
     try { localStorage.setItem('enigma_state', JSON.stringify(solved)); } catch(_) {}
+    // Ao completar 12 campos, desbloqueia a aba 11/05 no jornal
+    if (n >= 12 && !unlockedAt12) {
+      unlockedAt12 = true;
+      try { localStorage.setItem('enigma_complete', '1'); } catch(_) {}
+    }
     if (n === TOTAL && !alreadyFinished) {
       alreadyFinished = true;
       onAllSolved();
@@ -699,7 +706,6 @@
   document.getElementById('returnFinalBtn').addEventListener('click', showFinal);
 
   function onAllSolved() {
-    try { localStorage.setItem('enigma_complete', '1'); } catch(_) {}
     setTimeout(showFinal, 700);
   }
 
