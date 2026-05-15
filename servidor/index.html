@@ -1,0 +1,704 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>— Atlas Servidor</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Special+Elite&family=Crimson+Text:ital,wght@0,400;0,600;1,400&display=swap" rel="stylesheet">
+<style>
+:root {
+  --bg:   #040302;
+  --g0:   #0a1408;
+  --g1:   #1c3a12;
+  --g2:   #3a7228;
+  --g3:   #56a03c;
+  --g4:   #7acc58;
+  --red:  #7e1419;
+  --redb: #c0202a;
+  --amb:  #b06820;
+  --pap:  #ede0c4;
+  --papd: #1a0e06;
+}
+* { box-sizing: border-box; margin: 0; padding: 0; }
+html, body {
+  height: 100%;
+  background: var(--bg);
+  color: var(--g3);
+  font-family: 'Courier New', Courier, monospace;
+  font-size: 13px;
+  overflow: hidden;
+  -webkit-font-smoothing: antialiased;
+}
+/* scanlines */
+body::before {
+  content: '';
+  position: fixed; inset: 0; pointer-events: none; z-index: 90;
+  background: repeating-linear-gradient(
+    0deg, transparent, transparent 2px,
+    rgba(0,0,0,0.09) 2px, rgba(0,0,0,0.09) 4px
+  );
+}
+@keyframes flicker { 0%,96%,100%{opacity:1}97%{opacity:.93}98%{opacity:.97}99%{opacity:.91} }
+body { animation: flicker 12s ease-in-out infinite; }
+@keyframes blink { 0%,49%{opacity:1}50%,100%{opacity:0} }
+@keyframes pulse { 0%,100%{opacity:1}50%{opacity:.35} }
+@keyframes dvIn  { from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:none} }
+
+/* ── BOOT ── */
+#boot {
+  position: fixed; inset: 0; z-index: 100;
+  background: var(--bg);
+  display: flex; flex-direction: column;
+  align-items: center; justify-content: center;
+  padding: 32px 24px;
+}
+#bootPre {
+  font-size: 12px; color: var(--g3); line-height: 1.65;
+  white-space: pre; max-width: 580px; width: 100%;
+  text-shadow: 0 0 10px var(--g1);
+}
+#bootPre .hi  { color: var(--g4); text-shadow: 0 0 12px var(--g3); }
+#bootPre .ok  { color: var(--g4); }
+#bootPre .err { color: var(--red); }
+#bootPre .dim { color: var(--g1); }
+#bootPre .warn{ color: var(--amb); }
+#bootSkip {
+  position: absolute; bottom: 20px; right: 24px;
+  font-size: 10px; letter-spacing: .22em; color: var(--g1);
+  cursor: pointer; text-transform: uppercase; transition: color .2s;
+}
+#bootSkip:hover { color: var(--g2); }
+
+/* ── APP ── */
+#app { height: 100vh; display: grid; grid-template-rows: auto 1fr auto; overflow: hidden; }
+#app.off { display: none; }
+
+/* ── HEADER ── */
+.t-head {
+  border-bottom: 1px solid var(--g1); padding: 9px 20px;
+  display: flex; align-items: center; justify-content: space-between; gap: 12px; flex-wrap: wrap;
+  background: rgba(0,8,0,.55); flex-shrink: 0;
+}
+.t-logo { font-family: 'Special Elite', serif; font-size: 11px; letter-spacing: .45em; color: var(--g4); text-shadow: 0 0 12px var(--g3); text-transform: uppercase; }
+.t-path { font-size: 10px; color: var(--g1); letter-spacing: .08em; }
+.t-meta { font-size: 10px; color: var(--g2); letter-spacing: .18em; display: flex; gap: 16px; }
+.t-dot  { width: 6px; height: 6px; border-radius: 50%; background: var(--g3); display: inline-block; margin-right: 4px; box-shadow: 0 0 7px var(--g3); animation: pulse 2.5s ease-in-out infinite; }
+
+/* ── BODY ── */
+.t-body { display: flex; overflow: hidden; min-height: 0; }
+
+/* ── SIDEBAR ── */
+.sidebar {
+  width: 260px; flex-shrink: 0;
+  border-right: 1px solid var(--g1);
+  display: flex; flex-direction: column;
+  background: rgba(0,6,0,.4); overflow: hidden;
+}
+.sb-section { padding: 10px 16px 6px; font-size: 9px; letter-spacing: .3em; color: var(--g1); text-transform: uppercase; border-bottom: 1px solid #0c1509; flex-shrink: 0; }
+.sb-list { flex: 1; overflow-y: auto; padding: 4px 0; }
+.sb-list::-webkit-scrollbar { width: 2px; }
+.sb-list::-webkit-scrollbar-thumb { background: var(--g1); }
+
+.fi { display: flex; align-items: center; gap: 9px; padding: 9px 14px; cursor: pointer; transition: background .15s; position: relative; user-select: none; }
+.fi:hover  { background: rgba(60,114,40,.09); }
+.fi.active { background: rgba(60,114,40,.17); }
+.fi.locked { opacity: .35; cursor: default; }
+.fi.locked:hover { background: none; }
+.fi.secret { display: none; }
+.fi.secret.show { display: flex; }
+
+.fi-ico  { font-size: 14px; flex-shrink: 0; width: 18px; text-align: center; }
+.fi-name { font-size: 11px; color: var(--g3); flex: 1; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.fi.locked .fi-name { color: var(--g1); }
+.fi-sub  { font-size: 8px; color: var(--g1); letter-spacing: .08em; }
+
+.fi-badge { font-size: 8px; letter-spacing: .1em; padding: 1px 5px; border: 1px solid var(--g4); color: var(--g4); text-transform: uppercase; animation: pulse 1.1s ease-in-out infinite; }
+
+/* ── VIEWER ── */
+.viewer { flex: 1; overflow-y: auto; overflow-x: hidden; position: relative; }
+.viewer::-webkit-scrollbar { width: 4px; }
+.viewer::-webkit-scrollbar-thumb { background: var(--g1); }
+
+.welcome {
+  height: 100%; display: flex; flex-direction: column;
+  align-items: center; justify-content: center;
+  text-align: center; padding: 40px;
+}
+.welcome-srv { font-family: 'Special Elite', serif; font-size: clamp(70px,14vw,130px); letter-spacing: .04em; line-height: 1; color: var(--g1); opacity: .12; user-select: none; margin-bottom: 24px; }
+.welcome p { font-size: 11px; letter-spacing: .22em; color: var(--g1); line-height: 2.2; }
+.welcome p.hi { color: var(--g2); }
+
+/* ── DOC VIEW ── */
+.dv { padding: 22px 26px 48px; animation: dvIn .22s ease; }
+.dv-head { border-bottom: 1px solid var(--g1); padding-bottom: 10px; margin-bottom: 18px; display: flex; justify-content: space-between; align-items: flex-start; gap: 12px; flex-wrap: wrap; }
+.dv-title { font-size: 11px; letter-spacing: .3em; color: var(--g4); text-transform: uppercase; }
+.dv-meta  { font-size: 10px; color: var(--g1); letter-spacing: .08em; line-height: 1.9; text-align: right; }
+
+/* LOG */
+.lc { line-height: 1.95; }
+.lc .ts  { color: var(--g1); }
+.lc .sys { color: var(--g1); font-style: italic; }
+.lc .inf { color: var(--g2); }
+.lc .usr { color: var(--g4); letter-spacing: .06em; }
+.lc .arq { color: var(--amb); letter-spacing: .06em; }
+.lc .srv { color: var(--redb); letter-spacing: .06em; }
+.lc .key { color: var(--g4); letter-spacing: .12em; display: inline-block; min-width: 140px; }
+.lc .val { color: var(--amb); }
+.lc .chk { color: var(--g3); }
+.lc .sep { color: var(--g1); padding: 5px 0; display: block; }
+.lc .coord { color: var(--amb); font-weight: bold; letter-spacing: .12em; }
+.lc .enc  { color: var(--red); letter-spacing: .1em; }
+.lc .fin  { color: var(--g4); font-size: 12px; }
+
+/* PAPER */
+.pw { padding: 6px 12px 32px; }
+.paper {
+  background: var(--pap); color: var(--papd);
+  font-family: 'Crimson Text', Georgia, serif; font-size: 16px; line-height: 1.92;
+  padding: 50px 54px 58px; max-width: 600px; margin: 0 auto;
+  position: relative; box-shadow: 0 8px 60px rgba(0,0,0,.75), 0 0 0 1px rgba(0,0,0,.3);
+}
+.paper::before {
+  content: ''; position: absolute; inset: 0; pointer-events: none;
+  background: repeating-linear-gradient(0deg,transparent,transparent 30px,rgba(74,37,8,.055) 30px,rgba(74,37,8,.055) 31px);
+}
+.stamp { position: absolute; top: 30px; right: 34px; font-family: 'Special Elite', serif; font-size: 12px; letter-spacing: .22em; color: rgba(126,20,25,.72); border: 2px solid rgba(126,20,25,.55); padding: 4px 10px 3px; text-transform: uppercase; transform: rotate(3.5deg); z-index: 1; }
+.paper-lbl { font-family: 'Special Elite', serif; font-size: 8px; letter-spacing: .45em; color: #7a5030; opacity: .7; text-transform: uppercase; margin-bottom: 26px; }
+.paper-ttl { font-family: 'Special Elite', serif; font-size: 17px; letter-spacing: .1em; color: #1a0e06; text-transform: uppercase; border-bottom: 1px solid rgba(74,37,8,.18); padding-bottom: 12px; margin-bottom: 20px; }
+.paper p   { margin-bottom: 18px; color: #2c1a0c; }
+.paper p.lead { font-size: 18px; font-weight: 600; color: #1a0e06; }
+.paper-sig { font-family: 'Special Elite', serif; font-size: 12px; letter-spacing: .2em; color: #4a2810; text-transform: uppercase; margin-top: 24px; line-height: 2; }
+.paper-date { font-size: 11px; color: #7a5030; font-style: italic; margin-top: 4px; }
+.rx { background: #1a0e06; color: transparent; cursor: pointer; padding: 0 3px; border-radius: 1px; transition: background .25s, color .25s; }
+.rx:hover { background: #2e1a0e; }
+.rx.open { background: rgba(126,20,25,.12); color: #7e1419; cursor: default; }
+
+/* MAP VIEW */
+.map-view { padding: 20px 24px; font-size: 11px; line-height: 2; }
+.map-row { display: flex; gap: 16px; align-items: baseline; padding: 2px 0; }
+.map-row:hover { background: rgba(60,114,40,.06); }
+.map-id   { color: var(--g1); min-width: 28px; }
+.map-name { color: var(--g4); min-width: 160px; letter-spacing: .06em; }
+.map-coord{ color: var(--amb); min-width: 200px; font-size: 12px; letter-spacing: .1em; }
+.map-desc { color: var(--g2); font-size: 10px; letter-spacing: .05em; }
+.map-sep  { color: var(--g1); padding: 6px 0; display: block; }
+
+/* ── TERMINAL FOOTER ── */
+.t-foot { border-top: 1px solid var(--g1); background: rgba(0,6,0,.5); flex-shrink: 0; }
+.t-out  { max-height: 140px; overflow-y: auto; padding: 8px 20px 4px; font-size: 11px; line-height: 1.75; }
+.t-out:empty { display: none; }
+.t-out::-webkit-scrollbar { width: 2px; }
+.t-out::-webkit-scrollbar-thumb { background: var(--g1); }
+.tl      { color: var(--g2); }
+.tl.ok   { color: var(--g4); }
+.tl.err  { color: var(--red); }
+.tl.dim  { color: var(--g1); }
+.tl.inp  { color: var(--g3); opacity: .6; }
+.t-cmd   { display: flex; align-items: center; gap: 8px; padding: 9px 20px 10px; }
+.t-prompt{ color: var(--g4); font-size: 12px; white-space: nowrap; text-shadow: 0 0 10px var(--g3); }
+#cmd     { flex: 1; background: transparent; border: none; color: var(--g3); font-family: 'Courier New', monospace; font-size: 12px; outline: none; caret-color: var(--g4); }
+
+/* ── GLITCH OVERLAY ── */
+#glitchOverlay {
+  position: fixed; inset: 0; z-index: 200; background: var(--red);
+  display: flex; align-items: center; justify-content: center; opacity: 0;
+  pointer-events: none; font-family: 'Special Elite', serif;
+  font-size: clamp(22px, 5vw, 42px); letter-spacing: .25em;
+  color: #fff; text-shadow: 0 0 30px #fff; text-align: center; padding: 20px;
+  transition: opacity .05s;
+}
+@keyframes gShake {
+  0%,100%{transform:none;filter:none}
+  10%{transform:translate(-5px,2px) skewX(-2deg);filter:hue-rotate(90deg) brightness(1.6)}
+  30%{transform:translate(5px,-3px);filter:invert(.15)}
+  50%{transform:translate(-4px,5px) skewX(2deg);filter:hue-rotate(-90deg) saturate(2)}
+  70%{transform:translate(4px,-2px);filter:brightness(2.2) saturate(0)}
+  90%{transform:translate(-2px,3px);filter:hue-rotate(180deg)}
+}
+.glitching { animation: gShake .5s ease forwards !important; }
+
+@media(max-width:600px){
+  .sidebar { width: 200px; }
+  .paper { padding: 30px 20px 44px; }
+}
+@media(max-width:440px){
+  .t-body { flex-direction: column; }
+  .sidebar { width: 100%; height: 152px; border-right: none; border-bottom: 1px solid var(--g1); }
+  .sb-list { overflow-y: hidden; overflow-x: auto; display: flex; }
+  .fi { flex-direction: column; align-items: flex-start; min-width: 140px; padding: 8px 10px; }
+}
+</style>
+</head>
+<body>
+<!-- ATLAS-SRV -->
+<div id="glitchOverlay"></div>
+
+<!-- ═══ BOOT ═══ -->
+<div id="boot">
+  <div id="bootPre"></div>
+  <div id="bootSkip">[ clique para pular ]</div>
+</div>
+
+<!-- ═══ APP ═══ -->
+<div id="app" class="off">
+
+  <header class="t-head">
+    <div style="display:flex;align-items:center;gap:18px;">
+      <span class="t-logo">Atlas · Servidor</span>
+      <span class="t-path">/srv/atlas-minecraft/logs</span>
+    </div>
+    <div class="t-meta">
+      <span><span class="t-dot"></span>conectado</span>
+      <span id="fc">0 / 5 lidos</span>
+    </div>
+  </header>
+
+  <div class="t-body">
+
+    <!-- sidebar -->
+    <aside class="sidebar">
+      <div class="sb-section">── logs do servidor ──</div>
+      <nav class="sb-list" id="sbList">
+
+        <div class="fi" data-f="coords" onclick="openFile('coords')">
+          <span class="fi-ico">🗺️</span>
+          <span class="fi-name">COORDENADAS_ATLAS.log</span>
+        </div>
+
+        <div class="fi" data-f="sessao" onclick="openFile('sessao')">
+          <span class="fi-ico">💬</span>
+          <span class="fi-name">CHAT_SESSAO_08-05.log</span>
+        </div>
+
+        <div class="fi" data-f="sessao2" onclick="openFile('sessao2')">
+          <span class="fi-ico">💬</span>
+          <span class="fi-name">CHAT_SESSAO_11-05.log</span>
+        </div>
+
+        <div class="fi" data-f="nota" onclick="openFile('nota')">
+          <span class="fi-ico">📄</span>
+          <span class="fi-name">NOTA_CAMPO.doc</span>
+        </div>
+
+        <div class="fi secret" id="fiMapa" data-f="mapa" onclick="openFile('mapa')">
+          <span class="fi-ico">🏔️</span>
+          <span class="fi-name">MAPA_CAVERNA.doc</span>
+          <span class="fi-badge">novo</span>
+        </div>
+
+        <div class="fi locked" id="fiEnc" title="acesso negado">
+          <span class="fi-ico">🔒</span>
+          <span class="fi-name">CIFRADO_ORIGEM.enc</span>
+        </div>
+
+      </nav>
+    </aside>
+
+    <!-- viewer -->
+    <main class="viewer" id="viewer">
+      <div class="welcome" id="welcome">
+        <div class="welcome-srv">SRV</div>
+        <p class="hi">atlas-minecraft · acesso de leitura ativo</p>
+        <p style="margin-top:8px;">selecione um arquivo para ler<span style="animation:blink .7s step-end infinite;color:var(--g4)">_</span></p>
+      </div>
+    </main>
+
+  </div>
+
+  <!-- terminal footer -->
+  <footer class="t-foot">
+    <div class="t-out" id="tout"></div>
+    <div class="t-cmd">
+      <span class="t-prompt">atlas@srv:~$</span>
+      <input id="cmd" type="text" autocomplete="off" spellcheck="false" placeholder="digite um comando (help para listar)">
+    </div>
+  </footer>
+
+</div>
+
+<script>
+(function(){
+'use strict';
+
+const $  = id => document.getElementById(id);
+const qs = s  => document.querySelector(s);
+function sleep(ms){ return new Promise(r => setTimeout(r, ms)); }
+function esc(s){ return s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
+
+// ─── BOOT ─────────────────────────────────────────
+const BOOT = [
+  {t:'',s:0},
+  {t:'    ╔══════════════════════════════════════════╗',s:16,c:'hi'},
+  {t:'    ║   ATLAS MINECRAFT · SRV LOG v1.3.2      ║',s:16,c:'hi'},
+  {t:'    ║   Sistema de Arquivos do Servidor        ║',s:16,c:'hi'},
+  {t:'    ╚══════════════════════════════════════════╝',s:16,c:'hi'},
+  {t:'',s:0},
+  {t:'  Conectando ao servidor...                 [ OK ]',s:24,c:'ok'},
+  {t:'  Verificando permissões de leitura...      [ OK ]',s:24,c:'ok'},
+  {t:'  Montando logs de sessão...',s:28},
+  {t:'  [░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░] 0%',s:0,id:'bar'},
+  {t:'',s:0},
+  {t:'  AVISO: 1 arquivo cifrado inacessível.',s:20,c:'warn'},
+  {t:'  AVISO: coordenadas marcadas como restritas.',s:20,c:'warn'},
+  {t:'',s:0},
+  {t:'  ────────────────────────────────────────────',s:10,c:'dim'},
+  {t:'  ACESSO DE LEITURA CONCEDIDO.',s:20,c:'ok'},
+  {t:'  Bem-vindo ao arquivo do servidor, Visitante.',s:18,c:'ok'},
+  {t:'',s:35},
+];
+
+let bootDone = false;
+const bootEl = $('boot');
+const pre    = $('bootPre');
+const appEl  = $('app');
+
+function launchApp(){
+  if(bootDone) return;
+  bootDone = true;
+  bootEl.style.transition = 'opacity .5s';
+  bootEl.style.opacity = '0';
+  setTimeout(() => {
+    bootEl.style.display = 'none';
+    appEl.classList.remove('off');
+    $('cmd').focus();
+  }, 520);
+}
+$('bootSkip').addEventListener('click', launchApp);
+bootEl.addEventListener('click', launchApp);
+
+async function runBoot(){
+  let html = '';
+  for(let i = 0; i < BOOT.length; i++){
+    if(bootDone) return;
+    const b = BOOT[i];
+    if(b.id === 'bar'){
+      for(let p = 0; p <= 100; p += 4){
+        if(bootDone) return;
+        const f = Math.round(p / 100 * 36);
+        pre.innerHTML = html + `<span class="${p===100?'ok':''}">[` + '█'.repeat(f) + '░'.repeat(36-f) + `] ${p}%</span>\n`;
+        await sleep(25);
+      }
+      html += `<span class="ok">[████████████████████████████████████] 100%</span>\n`;
+    } else {
+      html += (b.c ? `<span class="${b.c}">${esc(b.t)}</span>` : esc(b.t)) + '\n';
+      pre.innerHTML = html;
+    }
+    await sleep(b.s);
+  }
+  await sleep(600);
+  launchApp();
+}
+runBoot();
+
+// ─── FILE STATE ────────────────────────────────────
+const opened = new Set();
+function updateCount(){
+  const n = opened.size;
+  $('fc').textContent = n + ' / 5 lidos';
+  if(n >= 3) unlockMapa();
+  if(n >= 5) unlockEnc();
+}
+function unlockMapa(){
+  const el = $('fiMapa');
+  if(!el.classList.contains('show')){
+    el.classList.add('show');
+    tprint('── novo arquivo disponível → MAPA_CAVERNA.doc ──','ok');
+  }
+}
+function unlockEnc(){
+  const el = $('fiEnc');
+  if(el.classList.contains('locked')){
+    el.classList.remove('locked');
+    el.title = '';
+    el.onclick = () => openFile('enc');
+    el.querySelector('.fi-name').style.color = '';
+    tprint('── acesso parcial desbloqueado → CIFRADO_ORIGEM.enc ──','ok');
+  }
+}
+
+// ─── VIEWER ────────────────────────────────────────
+function openFile(key){
+  const v = $('viewer');
+  v.innerHTML = '';
+  document.querySelectorAll('.fi').forEach(el => el.classList.remove('active'));
+  const fi = qs(`.fi[data-f="${key}"]`);
+  if(fi){ fi.classList.add('active'); const b = fi.querySelector('.fi-badge'); if(b) b.remove(); }
+  opened.add(key);
+  updateCount();
+  const div = document.createElement('div');
+  div.className = 'dv';
+  div.innerHTML = buildContent(key);
+  v.appendChild(div);
+  div.querySelectorAll('.rx').forEach(el => {
+    el.addEventListener('click', () => {
+      if(!el.classList.contains('open')){
+        el.classList.add('open');
+        tprint('conteúdo classificado revelado.','dim');
+      }
+    });
+  });
+  v.scrollTop = 0;
+}
+
+function buildContent(key){
+  const META = {
+    coords:  ['COORDENADAS_ATLAS.log', 'SISTEMA LOG · ATLAS-SRV', 'Atualizado: 13/05/2026'],
+    sessao:  ['CHAT_SESSAO_08-05.log', 'CHAT LOG · ATLAS-MINECRAFT', 'Data: 08/05/2026'],
+    sessao2: ['CHAT_SESSAO_11-05.log', 'CHAT LOG · ATLAS-MINECRAFT', 'Data: 11/05/2026'],
+    nota:    ['NOTA_CAMPO.doc',        'DOCUMENTO · ATLAS-SRV', 'Encontrado: 12/05/2026'],
+    mapa:    ['MAPA_CAVERNA.doc',      'DOCUMENTO · RESTRITO · ATLAS-SRV', 'Selado: 09/05/2026'],
+    enc:     ['CIFRADO_ORIGEM.enc',    'ARQUIVO CIFRADO · ACESSO PARCIAL', '???'],
+  };
+  const h = META[key] || [key,'',''];
+  const head = `<div class="dv-head">
+    <span class="dv-title">${h[0]}</span>
+    <span class="dv-meta">${h[1]}<br>${h[2]}</span>
+  </div>`;
+  return head + CONTENTS[key]();
+}
+
+const CONTENTS = {
+
+coords(){ return `<div class="lc">
+  <span class="sep">── ATLAS MINECRAFT · COORDENADAS MAPEADAS ─────────────────</span>
+  <div><span class="key">LOCAL_01</span>  <span class="coord">X: -312  Y: 11  Z: 88</span>   <span class="inf">CAVERNA_LACUNA</span></div>
+  <div class="sys">  →  inscrição "IX" nas paredes · 13 tochas · acesso restrito</div>
+  <div><span class="key">LOCAL_02</span>  <span class="coord">X:  204  Y: 64  Z: -17</span>  <span class="inf">TORRE_SENTINELA</span></div>
+  <div class="sys">  →  observatório · o arquivista aparece 23:05–23:16 · sem interação</div>
+  <div><span class="key">LOCAL_03</span>  <span class="coord">X:    0  Y: 11  Z:   0</span>  <span class="inf">ORIGEM_DO_MAPA</span></div>
+  <div class="sys">  →  ponto inicial do servidor · placa: "entre o oito e o dez"</div>
+  <div><span class="key">LOCAL_04</span>  <span class="coord">X: -888  Y: 32  Z: 404</span>  <span class="inf">ARQUIVO_PERDIDO</span></div>
+  <div class="sys">  →  sala vazia · porta trancada · hex na parede: 4C 41 43 55 4E 41</div>
+  <div><span class="key">LOCAL_05</span>  <span class="coord">X:  119  Y:  5  Z: -64</span>  <span class="inf">ABISMO_FUNDO</span></div>
+  <div class="sys">  →  Y=-64 · nível mais profundo · chest vazio · sinal nos blocos</div>
+  <div><span class="key">LOCAL_06</span>  <span class="coord">X: -312  Y: 11  Z: 99</span>   <span class="inf">SALA_ADJACENTE</span></div>
+  <div class="sys">  →  conectada à CAVERNA_LACUNA · só acessível após LOCAL_01</div>
+  <span class="sep">──────────────────────────────────────────────────────────────</span>
+  <div><span class="sys">NOTA: as coordenadas Y:11 repetem em quatro locais distintos.</span></div>
+  <div><span class="sys">      11 não é acidente. 11 é a data. 11 é o que não foi publicado.</span></div>
+</div>`; },
+
+sessao(){ return `<div class="lc">
+  <span class="sep">── CHAT LOG · 08/05/2026 · atlas-minecraft ────────────────</span>
+  <div><span class="ts">[08:44:12]</span>  <span class="inf">[INFO] Servidor iniciado em modo privado.</span></div>
+  <div><span class="ts">[08:44:15]</span>  <span class="arq">Arquivista entrou no jogo.</span></div>
+  <div><span class="ts">[08:44:22]</span>  <span class="arq">&lt;Arquivista&gt;</span>  bom dia, servidor vazio.</div>
+  <div><span class="ts">[08:44:28]</span>  <span class="arq">&lt;Arquivista&gt;</span>  hoje é o dia do IX.</div>
+  <div style="margin:4px 0"></div>
+  <div><span class="ts">[08:51:03]</span>  <span class="usr">Visitante_01 entrou no jogo.</span></div>
+  <div><span class="ts">[08:51:11]</span>  <span class="usr">&lt;Visitante_01&gt;</span>  você é o arquivista?</div>
+  <div><span class="ts">[08:51:19]</span>  <span class="arq">&lt;Arquivista&gt;</span>  depende de quem pergunta.</div>
+  <div><span class="ts">[08:51:30]</span>  <span class="usr">&lt;Visitante_01&gt;</span>  encontrei o enigma no site do atlas</div>
+  <div><span class="ts">[08:51:42]</span>  <span class="arq">&lt;Arquivista&gt;</span>  ah. então você está procurando o projeto ix.</div>
+  <div><span class="ts">[08:51:55]</span>  <span class="usr">&lt;Visitante_01&gt;</span>  o que é isso exatamente</div>
+  <div><span class="ts">[08:52:04]</span>  <span class="arq">&lt;Arquivista&gt;</span>  é o que existe entre o oito e o dez.</div>
+  <div><span class="ts">[08:52:09]</span>  <span class="arq">&lt;Arquivista&gt;</span>  existe no jornal. existe neste servidor. existe em todo lugar onde alguém para.</div>
+  <div><span class="ts">[08:52:18]</span>  <span class="usr">&lt;Visitante_01&gt;</span>  não entendi</div>
+  <div><span class="ts">[08:52:22]</span>  <span class="arq">&lt;Arquivista&gt;</span>  você vai entender.</div>
+  <div style="margin:4px 0"></div>
+  <div><span class="ts">[08:52:30]</span>  <span class="inf">[INFO] Arquivista teleportou para X:-312 Y:11 Z:88</span></div>
+  <div><span class="ts">[08:52:35]</span>  <span class="arq">&lt;Arquivista&gt;</span>  vem aqui.</div>
+  <div><span class="ts">[08:52:41]</span>  <span class="usr">&lt;Visitante_01&gt;</span>  que lugar é esse</div>
+  <div><span class="ts">[08:52:45]</span>  <span class="arq">&lt;Arquivista&gt;</span>  entre o oito e o dez.</div>
+  <div><span class="ts">[08:52:48]</span>  <span class="arq">&lt;Arquivista&gt;</span>  nas paredes desta caverna há uma inscrição que ninguém colocou.</div>
+  <div><span class="ts">[08:53:14]</span>  <span class="arq">&lt;Arquivista&gt;</span>  este servidor tem lacunas. conta as tochas desta sala.</div>
+  <div><span class="ts">[08:53:22]</span>  <span class="usr">&lt;Visitante_01&gt;</span>  contei 13</div>
+  <div><span class="ts">[08:53:26]</span>  <span class="arq">&lt;Arquivista&gt;</span>  isso.</div>
+  <div><span class="ts">[08:53:31]</span>  <span class="arq">&lt;Arquivista&gt;</span>  o projeto tem 13 fragmentos. não 9. eu menti sobre o 9.</div>
+  <div><span class="ts">[08:53:36]</span>  <span class="usr">&lt;Visitante_01&gt;</span>  por que mentiu</div>
+  <div><span class="ts">[08:53:40]</span>  <span class="arq">&lt;Arquivista&gt;</span>  para ver se você contava.</div>
+  <div style="margin:4px 0"></div>
+  <div><span class="ts">[08:54:12]</span>  <span class="inf">[INFO] Arquivista saiu do jogo.</span></div>
+  <div><span class="ts">[08:54:15]</span>  <span class="srv">[SISTEMA] coordenadas registradas: X:-312 Y:11 Z:88</span></div>
+  <div><span class="ts">[08:54:16]</span>  <span class="srv">[SISTEMA] próximo fragmento: procure onde os bots não chegam.</span></div>
+  <span class="sep">──────────────────────────────────────────────────────────────</span>
+</div>`; },
+
+sessao2(){ return `<div class="lc">
+  <span class="sep">── CHAT LOG · 11/05/2026 · atlas-minecraft ────────────────</span>
+  <div><span class="ts">[23:04:58]</span>  <span class="inf">[INFO] Servidor retomado após 3 dias offline.</span></div>
+  <div><span class="ts">[23:05:00]</span>  <span class="arq">Arquivista entrou no jogo.</span></div>
+  <div><span class="ts">[23:05:01]</span>  <span class="arq">&lt;Arquivista&gt;</span>  23:05. na hora certa.</div>
+  <div style="margin:4px 0"></div>
+  <div><span class="ts">[23:05:44]</span>  <span class="usr">Visitante_02 entrou no jogo.</span></div>
+  <div><span class="ts">[23:05:52]</span>  <span class="usr">&lt;Visitante_02&gt;</span>  oi. eu achei esse servidor no log do site</div>
+  <div><span class="ts">[23:05:59]</span>  <span class="arq">&lt;Arquivista&gt;</span>  o log estava esperando por você.</div>
+  <div><span class="ts">[23:06:12]</span>  <span class="usr">&lt;Visitante_02&gt;</span>  o que é o projeto ix</div>
+  <div><span class="ts">[23:06:20]</span>  <span class="arq">&lt;Arquivista&gt;</span>  hoje é 11.</div>
+  <div><span class="ts">[23:06:24]</span>  <span class="arq">&lt;Arquivista&gt;</span>  o jornal tem uma página /11.</div>
+  <div><span class="ts">[23:06:28]</span>  <span class="arq">&lt;Arquivista&gt;</span>  o servidor tem um bloco em Y:11.</div>
+  <div><span class="ts">[23:06:32]</span>  <span class="arq">&lt;Arquivista&gt;</span>  11 é o número que não foi publicado.</div>
+  <div><span class="ts">[23:06:45]</span>  <span class="usr">&lt;Visitante_02&gt;</span>  e o ix?</div>
+  <div><span class="ts">[23:06:50]</span>  <span class="arq">&lt;Arquivista&gt;</span>  ix é o que está entre o 11 e o resto.</div>
+  <div><span class="ts">[23:06:55]</span>  <span class="arq">&lt;Arquivista&gt;</span>  não é a nona edição.</div>
+  <div><span class="ts">[23:06:59]</span>  <span class="arq">&lt;Arquivista&gt;</span>  é a lacuna antes de qualquer edição.</div>
+  <div style="margin:4px 0"></div>
+  <div><span class="ts">[23:09:30]</span>  <span class="inf">[INFO] Arquivista teleportou para X:0 Y:11 Z:0</span></div>
+  <div><span class="ts">[23:09:35]</span>  <span class="arq">&lt;Arquivista&gt;</span>  leia a placa.</div>
+  <div><span class="ts">[23:09:48]</span>  <span class="usr">&lt;Visitante_02&gt;</span>  "entre o oito e o dez"</div>
+  <div><span class="ts">[23:09:52]</span>  <span class="arq">&lt;Arquivista&gt;</span>  agora vá para X:-888 Y:32 Z:404.</div>
+  <div><span class="ts">[23:09:55]</span>  <span class="arq">&lt;Arquivista&gt;</span>  o número 404 não é acidente.</div>
+  <div><span class="ts">[23:12:10]</span>  <span class="usr">&lt;Visitante_02&gt;</span>  achei. tem hex na parede</div>
+  <div><span class="ts">[23:12:15]</span>  <span class="arq">&lt;Arquivista&gt;</span>  decodifica.</div>
+  <div><span class="ts">[23:12:40]</span>  <span class="usr">&lt;Visitante_02&gt;</span>  LACUNA</div>
+  <div><span class="ts">[23:12:44]</span>  <span class="arq">&lt;Arquivista&gt;</span>  isso.</div>
+  <div><span class="ts">[23:12:46]</span>  <span class="arq">&lt;Arquivista&gt;</span>  o décimo terceiro fragmento estava aqui também.</div>
+  <div style="margin:4px 0"></div>
+  <div><span class="ts">[23:16:00]</span>  <span class="inf">[INFO] Arquivista saiu do jogo.</span></div>
+  <div><span class="ts">[23:16:00]</span>  <span class="srv">[SISTEMA] sessão encerrada exatamente em 23:16.</span></div>
+  <div><span class="ts">[23:16:01]</span>  <span class="srv">[SISTEMA] próxima sessão: indefinida.</span></div>
+  <span class="sep">──────────────────────────────────────────────────────────────</span>
+</div>`; },
+
+nota(){ return `<div class="pw"><div class="paper">
+  <div class="stamp">Campo</div>
+  <div class="paper-lbl">[ nota de campo · atlas servidor ]</div>
+  <div class="paper-ttl">Sobre o Servidor e o Projeto</div>
+  <p>O servidor de Minecraft não foi criado para ser descoberto.<br>
+  Foi criado para que o Arquivista tivesse um lugar onde pensar em voz alta.</p>
+  <p>Mas ao longo do tempo, visitantes começaram a aparecer.<br>
+  Não porque o endereço foi divulgado.<br>
+  Porque alguém leu o log. Porque alguém contou as tochas.</p>
+  <p>O servidor tem seis locais marcados.<br>
+  Cada um corresponde a um conceito do Projeto IX.<br>
+  <span class="rx" onclick="this.classList.add('open')">A caverna em X:-312 Y:11 Z:88 corresponde ao fragmento XIII.</span></p>
+  <p>Todas as coordenadas com Y:11 foram escolhidas intencionalmente.<br>
+  11 é o número que o jornal não publicou.<br>
+  11 existe na página <span class="rx" onclick="this.classList.add('open'">/11</span> do atlas.<br>
+  11 existe como Y:11 em quatro pontos do mapa.</p>
+  <p>O servidor não está aberto ao público.<br>
+  Mas se você chegou a este log, você já encontrou o suficiente.</p>
+  <div class="paper-sig">— nota de campo · sem assinatura</div>
+  <div class="paper-date">[encontrado nos logs em 12/05/2026]</div>
+</div></div>`; },
+
+mapa(){ return `<div class="pw"><div class="paper">
+  <div class="stamp">Restrito</div>
+  <div class="paper-lbl">[ mapa da caverna · y:11 · local 01 ]</div>
+  <div class="paper-ttl">Caverna Lacuna — X:-312 Y:11 Z:88</div>
+  <p>A caverna tem forma irregular, mas não natural.<br>
+  Foi escavada. As paredes são lisas demais para ser geração do mapa.</p>
+  <p>Ao entrar pela primeira vez:<br>
+  — 13 tochas na parede esquerda<br>
+  — 9 blocos de pedra negra no centro (3×3)<br>
+  — 1 chest no fundo · vazio<br>
+  — inscrição em cartaz: <span class="rx" onclick="this.classList.add('open')">L A C U N A</span></p>
+  <p>A sala adjacente em Z:99 só aparece depois que você lê o cartaz principal.<br>
+  Não é um trigger do jogo. <span class="rx" onclick="this.classList.add('open')">O Arquivista estava online.</span></p>
+  <p>Na sala Z:99:<br>
+  — hex na parede: 4C 50 43 41 4E 44<br>
+  — decodificado: <span class="rx" onclick="this.classList.add('open')">LPCAND</span><br>
+  — decifrado com chave APAGADO: <span class="rx" onclick="this.classList.add('open')">LACUNA</span></p>
+  <p>O mesmo fragmento estava na página /ix do jornal.<br>
+  O Arquivista colocou nos dois lugares.</p>
+  <div class="paper-sig">— mapa documentado · Visitante_02 · 11/05/2026</div>
+</div></div>`; },
+
+enc(){ return `<div class="lc">
+  <span class="sep">── CIFRADO_ORIGEM.enc · ACESSO PARCIAL ────────────────────</span>
+  <div><span class="enc">4f 52 49 47 45 4d 20 44 4f 20 41 52 51 55 49 56 49 53 54 41</span></div>
+  <div style="margin:4px 0"></div>
+  <div><span class="sys">decodificação parcial disponível:</span></div>
+  <div><span class="key">BLOCO_01</span>  <span class="val">ORIGEM DO ARQUIVISTA</span>  <span class="chk">✓ decodificado</span></div>
+  <div><span class="key">BLOCO_02</span>  <span class="enc">41 54 4c 41 53 20 4e c3 83 4f 20 c3 89 20</span>  <span class="sys">[requer chave]</span></div>
+  <div><span class="key">BLOCO_03</span>  <span class="enc">55 4d 20 4a 4f 52 4e 41 4c 2e</span>  <span class="sys">[requer chave]</span></div>
+  <div><span class="key">BLOCO_04</span>  <span class="enc">c3 89 20 55 4d 20 41 52 51 55 49 56 4f 2e</span>  <span class="sys">[requer chave]</span></div>
+  <div style="margin:8px 0"></div>
+  <div class="sys">A chave para os blocos 2–4 está no fragmento II do enigma principal.</div>
+  <div class="sys">Se você já completou o enigma, você já tem a chave.</div>
+  <span class="sep">──────────────────────────────────────────────────────────────</span>
+  <div class="fin">[ acesso completo requer enigma completo ]</div>
+</div>`; },
+
+};
+
+// ─── TERMINAL ──────────────────────────────────────
+function tprint(text, cls){
+  const o = $('tout');
+  const d = document.createElement('div');
+  d.className = 'tl ' + (cls||'');
+  d.textContent = text;
+  o.appendChild(d);
+  o.scrollTop = o.scrollHeight;
+}
+
+$('cmd').addEventListener('keydown', function(e){
+  if(e.key !== 'Enter') return;
+  const raw = this.value.trim();
+  if(!raw) return;
+  const inp = document.createElement('div');
+  inp.className = 'tl inp';
+  inp.textContent = 'atlas@srv:~$ ' + raw;
+  $('tout').appendChild(inp);
+  this.value = '';
+  processCmd(raw.toUpperCase());
+  $('tout').scrollTop = $('tout').scrollHeight;
+});
+
+const FILES = {coords:'coords',chat1:'sessao',chat2:'sessao2',nota:'nota',mapa:'mapa',enc:'enc',
+  coordenadas:'coords',sessao:'sessao',sessao2:'sessao2'};
+
+function processCmd(raw){
+  const parts = raw.split(/\s+/);
+  const cmd = parts[0];
+  const arg = parts.slice(1).join(' ');
+
+  if(cmd==='HELP'){
+    ['comandos disponíveis:',
+     '  help           → esta mensagem',
+     '  ls             → listar arquivos',
+     '  cat [arquivo]  → abrir arquivo',
+     '  coords         → mostrar coordenadas',
+     '  decode [hex]   → decodificar hex',
+     '  whoami         → identificação',
+     '  clear          → limpar terminal',
+    ].forEach((t,i) => tprint(t, i===0?'ok':''));
+    return;
+  }
+  if(cmd==='CLEAR'){ $('tout').innerHTML=''; return; }
+  if(cmd==='LS'){
+    ['── /srv/atlas-minecraft/logs ──────────────',
+     '🗺️  COORDENADAS_ATLAS.log     1.8 KB',
+     '💬  CHAT_SESSAO_08-05.log     2.2 KB',
+     '💬  CHAT_SESSAO_11-05.log     2.6 KB',
+     '📄  NOTA_CAMPO.doc            1.1 KB',
+     '🏔️  MAPA_CAVERNA.doc          1.4 KB  '+(opened.size>=3?'':'[bloqueado até 3 leituras]'),
+     '🔒  CIFRADO_ORIGEM.enc         ???',
+    ].forEach((t,i) => tprint(t, i===0?'dim':''));
+    return;
+  }
+  if(cmd==='WHOAMI'){
+    tprint('usuario:  visitante_leitura','');
+    tprint('servidor: atlas-minecraft','');
+    tprint('acesso:   logs · somente leitura','');
+    return;
+  }
+  if(cmd==='COORDS'){
+    openFile('coords');
+    tprint('abrindo COORDENADAS_ATLAS.log...','dim');
+    return;
+  }
+  if(cmd==='CAT'){
+    const key = FILES[arg.toLowerCase().replace(/[^a-z0-9]/g,'')];
+    if(key){ openFile(key); tprint('abrindo '+arg+'...','dim'); }
+    else tprint('arquivo não encontrado: '+arg,'err');
+    return;
+  }
+  if(cmd==='DECODE'){
+    const hex = arg.replace(/\s/g,'');
+    try {
+      const bytes = hex.match(/.{1,2}/g)||[];
+      const decoded = bytes.map(b => String.fromCharCode(parseInt(b,16))).join('');
+      tprint('hex: '+arg,'dim');
+      tprint('decodificado: '+decoded,'ok');
+    } catch(e){ tprint('hex inválido.','err'); }
+    return;
+  }
+  tprint('comando não reconhecido: '+raw.toLowerCase()+'. tente "help".','err');
+}
+
+})();
+</script>
+</body>
+</html>

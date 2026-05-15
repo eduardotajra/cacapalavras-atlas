@@ -1,0 +1,165 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Vigília — Jornal Atlas</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Special+Elite&family=Crimson+Text:ital,wght@0,400;1,400&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg:    #090605;
+    --ink:   #c5b49a;
+    --dim:   #4a3825;
+    --blood: #7e1419;
+  }
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body {
+    background: var(--bg);
+    color: var(--ink);
+    font-family: 'Crimson Text', Georgia, serif;
+    min-height: 100vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 40px 20px;
+    text-align: center;
+  }
+  /* Container único — JS injeta o conteúdo certo no momento certo */
+  #stage { max-width: 420px; width: 100%; display: none; }
+
+  .label {
+    font-family: 'Special Elite', serif;
+    font-size: 9px;
+    letter-spacing: 0.45em;
+    color: var(--dim);
+    text-transform: uppercase;
+    margin-bottom: 20px;
+  }
+  .title {
+    font-family: 'Special Elite', serif;
+    font-size: 26px;
+    letter-spacing: 0.15em;
+    text-transform: uppercase;
+    margin-bottom: 28px;
+  }
+  .text {
+    font-size: 16px;
+    line-height: 1.9;
+    color: var(--dim);
+    font-style: italic;
+    margin-bottom: 32px;
+  }
+  .time-display {
+    font-family: 'Special Elite', serif;
+    font-size: 36px;
+    letter-spacing: 0.1em;
+    color: var(--blood);
+    margin: 28px 0;
+    opacity: 0.7;
+  }
+  .hint {
+    font-size: 12px;
+    letter-spacing: 0.2em;
+    color: var(--dim);
+    font-family: 'Special Elite', serif;
+    text-transform: uppercase;
+    margin-top: 24px;
+    opacity: 0.5;
+  }
+  .revealed-text {
+    font-size: 17px;
+    line-height: 2;
+    font-style: italic;
+    margin-bottom: 28px;
+  }
+  .revealed-sig {
+    font-family: 'Special Elite', serif;
+    font-size: 12px;
+    letter-spacing: 0.25em;
+    color: var(--dim);
+    text-transform: uppercase;
+  }
+</style>
+</head>
+<body>
+
+<!-- Sem conteúdo no HTML — injeta via JS apenas quando necessário -->
+<div id="stage"></div>
+
+<script>
+(function() {
+  'use strict';
+  function pad(n) { return String(n).padStart(2, '0'); }
+
+  const stage = document.getElementById('stage');
+
+  function renderLocked(h, m) {
+    stage.innerHTML =
+      '<div class="label">Jornal Atlas · Arquivo Especial</div>' +
+      '<div class="title">Vigília</div>' +
+      '<div class="text">Esta página só existe em determinado momento.<br>' +
+      'Não antes. Não depois.<br><br>' +
+      '<em>Volte quando o jornal fechar.</em></div>' +
+      '<div class="time-display">' + pad(h) + ':' + pad(m) + '</div>' +
+      '<div class="hint">a janela abre às 23:05</div>';
+    stage.style.display = 'block';
+  }
+
+  // Conteúdo secreto fragmentado — dificulta leitura direta no source
+  const _p = [
+    'Entre os dias que o jornal não conta,',
+    'existe um espaço onde as histórias respiram.',
+    'Este é esse espaço.',
+    '”O Atlas foi construído por quem ficou.',
+    'Não por quem passou.”'
+  ];
+  const _k = '\x53\x45\x4e\x54\x49\x4e\x45\x4c\x41';
+
+  function renderUnlocked() {
+    stage.innerHTML =
+      '<div class=”label”>Jornal Atlas · Vigília Aberta</div>' +
+      '<div class=”title”>Você Chegou a Tempo</div>' +
+      '<div class=”revealed-text”>' +
+        _p[0] + '<br>' + _p[1] + '<br><br>' +
+        _p[2] + '<br><br>' +
+        '<em>' + _p[3] + '<br>' + _p[4] + '</em>' +
+      '</div>' +
+      '<div style=”font-family:\'Special Elite\',serif;font-size:22px;letter-spacing:0.3em;color:#7e1419;margin:32px 0 8px;opacity:0.85;”>' + _k + '</div>' +
+      '<div class=”revealed-sig”>— O Arquivista · 23:11</div>';
+    stage.style.display = 'block';
+  }
+
+  let lastState = null; // evita re-render desnecessário
+
+  function check() {
+    const now = new Date();
+    const h = now.getHours();
+    const m = now.getMinutes();
+    const inWindow = (h === 23 && m >= 5 && m <= 16);
+    const state = inWindow ? 'open' : 'locked';
+
+    if (state === lastState) {
+      // Só atualiza o relógio se estiver no estado locked
+      if (state === 'locked') {
+        const el = stage.querySelector('.time-display');
+        if (el) el.textContent = pad(h) + ':' + pad(m);
+      }
+      return;
+    }
+
+    lastState = state;
+    stage.innerHTML = ''; // limpa DOM antes de injetar
+    if (inWindow) {
+      renderUnlocked();
+    } else {
+      renderLocked(h, m);
+    }
+  }
+
+  check();
+  setInterval(check, 15000);
+})();
+</script>
+</body>
+</html>
