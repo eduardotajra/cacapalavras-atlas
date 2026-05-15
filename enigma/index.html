@@ -278,6 +278,26 @@
     opacity: 0;
     animation: fadeUp 0.8s ease 1.4s forwards;
   }
+  .final-hint {
+    margin-top: 32px;
+    font-size: 12px;
+    line-height: 1.8;
+    color: var(--ink-dim);
+    font-style: italic;
+    border-top: 1px solid var(--border);
+    padding-top: 20px;
+    opacity: 0;
+    animation: fadeUp 0.8s ease 1.7s forwards;
+  }
+  .final-hint .hint-label {
+    font-family: 'Special Elite', serif;
+    font-size: 9px;
+    letter-spacing: 0.35em;
+    text-transform: uppercase;
+    color: var(--blood);
+    display: block;
+    margin-bottom: 8px;
+  }
   .final-back-btn {
     display: block;
     margin: 32px auto 0;
@@ -291,7 +311,7 @@
     cursor: pointer;
     text-transform: uppercase;
     opacity: 0;
-    animation: fadeUp 0.8s ease 1.8s forwards;
+    animation: fadeUp 0.8s ease 2.0s forwards;
     transition: border-color 0.2s, color 0.2s;
   }
   .final-back-btn:hover { border-color: var(--ink-dim); color: var(--ink); }
@@ -580,6 +600,11 @@
   <a class="final-link" href="https://projetoix.vercel.app" target="_blank">
     acessar o arquivo — projetoix.vercel.app
   </a>
+  <div class="final-hint">
+    <span class="hint-label">fragmento XIV</span><br>
+    no arquivo, há algo selado.<br>
+    a senha é o número que você acabou de reunir.
+  </div>
   <button class="final-back-btn" id="finalBackBtn">↩ ver campos resolvidos</button>
 </div>
 
