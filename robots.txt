@@ -1,5 +1,7 @@
 User-agent: *
 Disallow: /arquivo
+Disallow: /enigma
 Disallow: /9
 Disallow: /admin
+Disallow: /vigilia
 # VmlzaXRhbnRlIGN1cmlvc28uCk8gcXVlIHZvY8OqIHByb2N1cmEgbsOjbyBlc3TDoSBhcXVpLgpNYXMgdm9jw6ogasOhIGVzdMOhIHBlcnRvLgpSQVNUUk8uCg==

@@ -3206,11 +3206,11 @@
   // Morse de ONZE: O=--- N=-. Z=--.. E=.
   // dash = lub-dub (batida completa, ~420ms) | dot = lub (batida curta, ~160ms)
   // pause: símbolo=150ms | letra=500ms | loop=1800ms
-  const MORSE_ONZE = [
-    {t:'dash',p:150},{t:'dash',p:150},{t:'dash',p:500}, // O ---
-    {t:'dash',p:150},{t:'dot', p:500},                  // N -.
-    {t:'dash',p:150},{t:'dash',p:150},{t:'dot',p:150},{t:'dot',p:500}, // Z --..
-    {t:'dot', p:1800}                                   // E .
+  const MORSE_NOVE = [
+    {t:'dash',p:150},{t:'dot', p:500},                             // N -.
+    {t:'dash',p:150},{t:'dash',p:150},{t:'dash',p:500},            // O ---
+    {t:'dot', p:150},{t:'dot', p:150},{t:'dot', p:150},{t:'dash',p:500}, // V ...-
+    {t:'dot', p:1800}                                              // E .
   ];
 
   let specialState = {
@@ -3482,7 +3482,7 @@
     if (!specialState.audioOn || !specialState.audioCtx) return;
     const ctx = specialState.audioCtx;
     const t   = ctx.currentTime;
-    const entry = MORSE_ONZE[specialState.morseIdx];
+    const entry = MORSE_NOVE[specialState.morseIdx];
 
     if (entry.t === 'dash') {
       // Traço — lub-dub completo: batida grave e dupla
@@ -3494,7 +3494,7 @@
     }
 
     const dur = entry.t === 'dash' ? 420 : 160;
-    specialState.morseIdx = (specialState.morseIdx + 1) % MORSE_ONZE.length;
+    specialState.morseIdx = (specialState.morseIdx + 1) % MORSE_NOVE.length;
     specialState.heartbeatTimer = setTimeout(specialHeartbeatLoop, dur + entry.p);
   }
 
