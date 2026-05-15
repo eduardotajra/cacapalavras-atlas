@@ -1,0 +1,14 @@
+/* JORNAL ATLAS — créditos */
+
+O Atlas não foi construído em um dia.
+Registrar momentos é um ato de resistência.
+Isso não é documentação. É memória.
+Guardar o que passa é o único projeto que não termina.
+Entre os dias, existe o que ninguém viu chegar.
+Mas você chegou até aqui. O arquivo está aberto.
+
+Team:        O Arquivista
+Location:    Entre os dias
+Since:       2026
+
+/* este arquivo existe porque alguém procurou */

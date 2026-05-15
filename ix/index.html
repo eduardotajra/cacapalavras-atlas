@@ -1,0 +1,91 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>— Jornal Atlas</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Special+Elite&family=Crimson+Text:ital,wght@0,400;1,400&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg:   #060404;
+    --ink:  #c5b49a;
+    --dim:  #4a3825;
+    --red:  #7e1419;
+  }
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  html, body {
+    min-height: 100%;
+    background: var(--bg);
+    color: var(--ink);
+    font-family: 'Crimson Text', Georgia, serif;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 40px 24px;
+  }
+  body::before {
+    content: '';
+    position: fixed;
+    inset: 0;
+    pointer-events: none;
+    background: radial-gradient(ellipse at center, transparent 40%, rgba(0,0,0,0.85) 100%);
+  }
+  .page {
+    position: relative;
+    max-width: 460px;
+    text-align: center;
+  }
+  .label {
+    font-family: 'Special Elite', serif;
+    font-size: 8px;
+    letter-spacing: 0.55em;
+    color: var(--red);
+    text-transform: uppercase;
+    opacity: 0.5;
+    margin-bottom: 52px;
+  }
+  .num {
+    font-family: 'Special Elite', serif;
+    font-size: 88px;
+    letter-spacing: 0.06em;
+    color: var(--ink);
+    opacity: 0.08;
+    line-height: 1;
+    margin-bottom: 40px;
+    user-select: none;
+  }
+  .text {
+    font-size: 16px;
+    line-height: 2;
+    color: var(--dim);
+    font-style: italic;
+    margin-bottom: 36px;
+  }
+  .sig {
+    font-family: 'Special Elite', serif;
+    font-size: 10px;
+    letter-spacing: 0.3em;
+    color: var(--dim);
+    text-transform: uppercase;
+    opacity: 0.4;
+    margin-top: 48px;
+  }
+</style>
+</head>
+<body>
+<!-- LPCAND -->
+<div class="page">
+  <div class="label">Jornal Atlas · Fragmento Não Registrado</div>
+  <div class="num" aria-hidden="true">IX</div>
+  <div class="text">
+    Este fragmento não tem endereço nos registros.<br>
+    Você chegou aqui porque procurou<br>
+    onde ninguém disse para procurar.<br><br>
+    <em>A lacuna entre os dias<br>
+    também é um lugar.</em>
+  </div>
+  <div class="sig">— o arquivista · fragmento ix</div>
+</div>
+</body>
+</html>

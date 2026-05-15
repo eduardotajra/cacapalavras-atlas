@@ -3,6 +3,12 @@
   "trailingSlash": false,
   "headers": [
     {
+      "source": "/(.*)",
+      "headers": [
+        { "key": "X-Atlas-Sinal", "value": "U0lOQUw=" }
+      ]
+    },
+    {
       "source": "/silencio.wav",
       "headers": [
         { "key": "Content-Type", "value": "audio/wav" },
