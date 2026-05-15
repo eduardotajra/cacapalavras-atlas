@@ -1,0 +1,335 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>ATLAS/ARQUIVO — Acesso Restrito</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Special+Elite&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg:    #080604;
+    --term:  #0d0a07;
+    --green: #4a7a3a;
+    --gl:    #6aaa52;
+    --dim:   #2d4022;
+    --red:   #7a1418;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  html, body {
+    min-height: 100%;
+    background: var(--bg);
+    color: var(--gl);
+    font-family: 'Courier New', Courier, monospace;
+    font-size: 13px;
+    line-height: 1.6;
+    -webkit-font-smoothing: antialiased;
+  }
+  .terminal {
+    max-width: 680px;
+    margin: 0 auto;
+    padding: 28px 20px 60px;
+  }
+  .line { margin-bottom: 2px; }
+  .dim  { color: var(--dim); }
+  .red  { color: var(--red); }
+  .bright { color: #a0d882; }
+  .prompt { color: var(--dim); }
+
+  /* Lock screen */
+  #lockScreen { }
+  .lock-art {
+    color: var(--dim);
+    margin-bottom: 16px;
+    font-size: 11px;
+    line-height: 1.4;
+    white-space: pre;
+  }
+  .lock-title {
+    font-family: 'Special Elite', serif;
+    color: var(--gl);
+    font-size: 14px;
+    letter-spacing: 0.3em;
+    margin-bottom: 20px;
+  }
+  .input-line {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    margin-top: 12px;
+  }
+  .input-line span { color: var(--dim); }
+  #pwInput {
+    background: transparent;
+    border: none;
+    border-bottom: 1px solid var(--dim);
+    color: var(--gl);
+    font-family: 'Courier New', Courier, monospace;
+    font-size: 13px;
+    letter-spacing: 0.2em;
+    outline: none;
+    width: 200px;
+    padding: 2px 4px;
+  }
+  .pw-error { color: var(--red); margin-top: 6px; display: none; }
+  .pw-error.show { display: block; }
+
+  /* File system */
+  #fileSystem { display: none; }
+  .fs-header {
+    margin-bottom: 20px;
+    border-bottom: 1px solid var(--dim);
+    padding-bottom: 12px;
+  }
+  .fs-path { color: var(--gl); }
+  .file-list { margin-bottom: 20px; }
+  .file-item {
+    cursor: pointer;
+    padding: 3px 0;
+    transition: color 0.15s;
+  }
+  .file-item:hover { color: #a0d882; }
+  .file-item .ftype { color: var(--dim); display: inline-block; width: 60px; }
+
+  /* Viewer */
+  #fileViewer { display: none; margin-top: 20px; }
+  .viewer-header {
+    border-bottom: 1px solid var(--dim);
+    padding-bottom: 8px;
+    margin-bottom: 16px;
+    display: flex;
+    justify-content: space-between;
+  }
+  .viewer-close {
+    cursor: pointer;
+    color: var(--dim);
+    background: none;
+    border: none;
+    font-family: inherit;
+    font-size: inherit;
+    color: var(--gl);
+    padding: 0;
+  }
+  .viewer-close:hover { color: #a0d882; }
+  .viewer-content { white-space: pre-wrap; line-height: 1.8; }
+  .viewer-content .redacted {
+    background: var(--dim);
+    color: var(--dim);
+    user-select: none;
+  }
+</style>
+</head>
+<body>
+<div class="terminal">
+
+  <!-- Lock screen -->
+  <div id="lockScreen">
+    <div class="lock-art">
+ _____ _   _    _   ____
+|  ___| \ | |  / \ / ___|
+| |_  |  \| | / _ \\___ \
+|  _| | |\  |/ ___ \___) |
+|_|   |_| \_/_/   \_|____/
+
+     A T L A S · A R Q U I V O
+    </div>
+
+    <div class="line dim">Sistema de Arquivos Restrito</div>
+    <div class="line dim">Versão 0.11.0 · acesso mediante autorização</div>
+    <div class="line" style="margin-top:16px;">&gt; Autenticação requerida.</div>
+    <div class="line dim">Insira a senha para prosseguir.</div>
+
+    <div class="input-line">
+      <span>&gt;&gt;</span>
+      <input id="pwInput" type="password" maxlength="30" autofocus autocomplete="off" placeholder="senha">
+    </div>
+    <div class="pw-error" id="pwError">&gt; Acesso negado. Senha incorreta.</div>
+    <div class="line dim" style="margin-top: 24px; font-size: 11px;">[dica: quem completou o enigma conhece o nome]</div>
+  </div>
+
+  <!-- File system (visível após login) -->
+  <div id="fileSystem">
+    <div class="fs-header">
+      <div class="line"><span class="dim">conectado como</span> <span class="bright">arquivista@atlas.internal</span></div>
+      <div class="line fs-path">&gt; /arquivo/raiz</div>
+    </div>
+
+    <div class="line dim">── listando arquivos ──</div>
+    <div class="file-list" id="fileList">
+      <div class="file-item" data-file="log_geral">
+        <span class="ftype">[LOG]</span> log_geral.txt
+      </div>
+      <div class="file-item" data-file="registro_xi">
+        <span class="ftype">[DOC]</span> registro_xi.txt
+      </div>
+      <div class="file-item" data-file="nota_geraldo">
+        <span class="ftype">[DOC]</span> nota_sobre_geraldo.txt
+      </div>
+      <div class="file-item" data-file="entrada_final" id="fileEntradaFinal">
+        <span class="ftype">[DOC]</span> entrada_final.txt
+      </div>
+      <div class="file-item dim" style="cursor:default;">
+        <span class="ftype dim">[ENC]</span> <span class="dim">███████████.bin — corrompido</span>
+      </div>
+    </div>
+
+    <div id="fileViewer">
+      <div class="viewer-header">
+        <span id="viewerTitle" class="bright">&gt; visualizando:</span>
+        <button class="viewer-close" id="viewerClose">[fechar]</button>
+      </div>
+      <div class="viewer-content" id="viewerContent"></div>
+    </div>
+  </div>
+
+</div>
+
+<script>
+(function() {
+  'use strict';
+
+  const PASSWORD = 'ENIGMA';
+  const pwInput  = document.getElementById('pwInput');
+  const pwError  = document.getElementById('pwError');
+  const lockEl   = document.getElementById('lockScreen');
+  const fsEl     = document.getElementById('fileSystem');
+  const viewerEl = document.getElementById('fileViewer');
+  const viewerTitle   = document.getElementById('viewerTitle');
+  const viewerContent = document.getElementById('viewerContent');
+  const viewerClose   = document.getElementById('viewerClose');
+
+  // Conteúdo dos arquivos
+  const FILES = {
+    log_geral: {
+      title: 'log_geral.txt',
+      content:
+`[ATLAS/LOG — entradas selecionadas]
+
+2026-04-28  Edição IX registrada. Preparativos iniciados.
+2026-05-01  Sistema de arquivos criado. Acesso restrito configurado.
+2026-05-03  Primeira edição publicada. Nenhuma anomalia.
+2026-05-04  GERALDO adicionado como observador permanente.
+2026-05-11  [ENTRADA AUSENTE]
+2026-05-12  NPCs catalogados. Geraldo confirmado.
+2026-05-13  Edição especial. Arquivo selado.
+
+NOTA: A entrada de 11/05 não consta nos registros.
+      Isso não é um erro.`
+    },
+
+    registro_xi: {
+      title: 'registro_xi.txt',
+      content:
+`[ATLAS/REGISTRO — PROJETO IX]
+
+O Projeto IX foi concebido antes da primeira edição.
+Não como conteúdo. Como intenção.
+
+Nove era o número escolhido.
+Nove nunca chegou.
+
+O que foi construído em seu lugar
+não tem nome nos registros.
+Tem apenas uma entrada, em algum lugar,
+esperando quem souber procurar.
+
+O Arquivista sabe onde.
+O Arquivista sempre soube.
+
+[DOCUMENTO INCOMPLETO — continuação em: entrada_final.txt]`
+    },
+
+    nota_geraldo: {
+      title: 'nota_sobre_geraldo.txt',
+      content:
+`[NOTA INTERNA — sobre o observador]
+
+GERALDO VELHO — NPC estático. Instalado no dia 4.
+GERALDO SÁBIO — NPC dinâmico. Instalado no dia 12.
+
+Ambos foram designados como observadores passivos.
+Nenhum deles fala por iniciativa própria.
+Mas ambos guardam algo.
+
+O Velho: blocos ao redor formam um padrão.
+          Leia cada posição com atenção.
+O Sábio: tem um livro. A chave é o número.
+          "Os dias que nunca foram" — use isso.
+
+— — —
+
+A vigília começa ao anoitecer.
+Por trás dos blocos, existe uma linguagem.
+Apenas ele conhece o padrão completo.
+Geraldo Velho foi instalado em silêncio.
+A mensagem que carrega não é óbvia.
+Dois Geraldos, dois propósitos distintos.
+O segundo guarda o que o primeiro esqueceu.
+
+— — —
+
+[GERALDO observa. Sempre observou.]`
+    },
+
+    entrada_final: {
+      title: 'entrada_final.txt',
+      content:
+`[ATLAS/ARQUIVO — ENTRADA FINAL]
+
+O Atlas não é um servidor.
+É um repositório de momentos.
+
+O Projeto IX existe.
+Não como nona edição,
+como nona INTENCAO.
+
+Essa palavra é a última chave.
+Quem chegou até aqui já sabe o que fazer.
+
+A carta completa está em outro arquivo.
+Você já sabe onde encontrá-la.
+
+  — O Arquivista
+    [entrada selada em 13/05/2026]`
+    }
+  };
+
+  // Login
+  function tryLogin() {
+    const val = pwInput.value.trim().toUpperCase()
+      .normalize('NFD').replace(/[̀-ͯ]/g, '');
+    if (val === PASSWORD) {
+      lockEl.style.display = 'none';
+      fsEl.style.display = 'block';
+      pwError.classList.remove('show');
+    } else {
+      pwError.classList.add('show');
+      pwInput.value = '';
+      pwInput.focus();
+    }
+  }
+
+  pwInput.addEventListener('keydown', e => {
+    if (e.key === 'Enter') tryLogin();
+  });
+
+  // File open
+  document.getElementById('fileList').addEventListener('click', e => {
+    const item = e.target.closest('.file-item[data-file]');
+    if (!item) return;
+    const key = item.dataset.file;
+    const f   = FILES[key];
+    if (!f) return;
+    viewerTitle.textContent = '> visualizando: ' + f.title;
+    viewerContent.textContent = f.content;
+    viewerEl.style.display = 'block';
+    viewerEl.scrollIntoView({ behavior: 'smooth', block: 'start' });
+  });
+
+  viewerClose.addEventListener('click', () => {
+    viewerEl.style.display = 'none';
+  });
+})();
+</script>
+</body>
+</html>

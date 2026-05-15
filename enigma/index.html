@@ -1,0 +1,693 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Enigma — Jornal Atlas</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Special+Elite&family=Crimson+Text:ital,wght@0,400;0,600;1,400&family=Caveat:wght@500&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg:       #0d0905;
+    --paper:    #1a120b;
+    --border:   #3a2515;
+    --ink:      #c5b49a;
+    --ink-dim:  #6b5740;
+    --blood:    #7e1419;
+    --blood-d:  #4d0d10;
+    --correct:  #2d5a27;
+    --correct-l:#4f8a52;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  html, body {
+    min-height: 100%;
+    background: var(--bg);
+    color: var(--ink);
+    font-family: 'Crimson Text', Georgia, serif;
+    overflow-x: hidden;
+    -webkit-font-smoothing: antialiased;
+  }
+  .header {
+    text-align: center;
+    padding: 52px 20px 20px;
+  }
+  .header::after {
+    content: '';
+    display: block;
+    width: 60px;
+    height: 1px;
+    background: var(--border);
+    margin: 20px auto 0;
+  }
+  .header-label {
+    font-family: 'Special Elite', serif;
+    font-size: 10px;
+    letter-spacing: 0.4em;
+    color: var(--ink-dim);
+    text-transform: uppercase;
+    margin-bottom: 10px;
+  }
+  .header-title {
+    font-family: 'Special Elite', serif;
+    font-size: 28px;
+    letter-spacing: 0.12em;
+    color: var(--ink);
+    text-transform: uppercase;
+  }
+  .header-sub {
+    font-size: 13px;
+    color: var(--ink-dim);
+    font-style: italic;
+    margin-top: 6px;
+    line-height: 1.6;
+  }
+  .carousel-wrap {
+    position: relative;
+    max-width: 480px;
+    margin: 32px auto 0;
+    padding: 0 20px;
+    user-select: none;
+  }
+  .carousel { overflow: hidden; border-radius: 2px; }
+  .cards-track {
+    display: flex;
+    transition: transform 0.38s cubic-bezier(0.4,0,0.2,1);
+    will-change: transform;
+  }
+  .card {
+    flex: 0 0 100%;
+    background: var(--paper);
+    border: 1px solid var(--border);
+    border-radius: 2px;
+    padding: 36px 28px 32px;
+    position: relative;
+    min-height: 320px;
+    display: flex;
+    flex-direction: column;
+  }
+  .card::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: repeating-linear-gradient(
+      0deg, transparent, transparent 28px,
+      rgba(58,37,21,0.15) 28px, rgba(58,37,21,0.15) 29px
+    );
+    pointer-events: none;
+  }
+  .card-num {
+    font-family: 'Special Elite', serif;
+    font-size: 9px;
+    letter-spacing: 0.45em;
+    color: var(--ink-dim);
+    text-transform: uppercase;
+    margin-bottom: 20px;
+  }
+  .card-clue {
+    font-size: 16px;
+    line-height: 1.8;
+    color: var(--ink);
+    font-style: italic;
+    flex: 1;
+    margin-bottom: 28px;
+  }
+  .card-clue strong { font-style: normal; color: #d4c0a0; }
+  .card-input-wrap {
+    position: relative;
+    display: flex;
+    gap: 8px;
+    align-items: center;
+  }
+  .card-input {
+    flex: 1;
+    background: transparent;
+    border: none;
+    border-bottom: 1px solid var(--border);
+    padding: 6px 4px;
+    font-family: 'Special Elite', serif;
+    font-size: 14px;
+    letter-spacing: 0.2em;
+    color: var(--ink);
+    outline: none;
+    text-transform: uppercase;
+    transition: border-color 0.2s;
+  }
+  .card-input:focus { border-bottom-color: var(--ink-dim); }
+  .card-input.correct { border-bottom-color: var(--correct-l); color: var(--correct-l); }
+  .card-input.wrong { animation: shake 0.35s ease; }
+  .card-btn {
+    background: none;
+    border: 1px solid var(--border);
+    color: var(--ink-dim);
+    font-family: 'Special Elite', serif;
+    font-size: 10px;
+    letter-spacing: 0.15em;
+    padding: 6px 12px;
+    cursor: pointer;
+    text-transform: uppercase;
+    transition: border-color 0.2s, color 0.2s;
+  }
+  .card-btn:hover { border-color: var(--ink-dim); color: var(--ink); }
+  .card-btn:disabled { opacity: 0.35; cursor: default; }
+  .card-status {
+    margin-top: 12px;
+    font-size: 11px;
+    letter-spacing: 0.15em;
+    color: transparent;
+    font-family: 'Special Elite', serif;
+    text-transform: uppercase;
+    min-height: 16px;
+    transition: color 0.3s;
+  }
+  .card-status.ok { color: var(--correct-l); }
+  .card-status.err { color: var(--blood); }
+  .card-stamp {
+    position: absolute;
+    top: 18px; right: 18px;
+    width: 36px; height: 36px;
+    border: 2px solid var(--correct);
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    opacity: 0;
+    transform: scale(0.5) rotate(-15deg);
+    transition: opacity 0.4s, transform 0.4s cubic-bezier(0.34,1.56,0.64,1);
+    pointer-events: none;
+  }
+  .card-stamp.show { opacity: 0.85; transform: scale(1) rotate(-8deg); }
+  .card-stamp svg { width: 18px; height: 18px; fill: var(--correct-l); }
+  .carousel-nav {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 12px;
+    margin-top: 18px;
+  }
+  .nav-btn {
+    background: none;
+    border: 1px solid var(--border);
+    color: var(--ink-dim);
+    width: 34px; height: 34px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: border-color 0.2s;
+    font-size: 14px;
+  }
+  .nav-btn:hover { border-color: var(--ink-dim); }
+  .nav-btn:disabled { opacity: 0.25; cursor: default; }
+  .dots { display: flex; gap: 6px; align-items: center; }
+  .dot {
+    width: 6px; height: 6px;
+    border-radius: 50%;
+    background: var(--border);
+    transition: background 0.2s, transform 0.2s;
+  }
+  .dot.active { background: var(--ink-dim); transform: scale(1.3); }
+  .dot.done   { background: var(--correct); }
+  .progress-line {
+    text-align: center;
+    margin: 24px 20px 0;
+    font-size: 11px;
+    letter-spacing: 0.22em;
+    color: var(--ink-dim);
+    font-family: 'Special Elite', serif;
+  }
+  .progress-bar {
+    max-width: 480px;
+    margin: 10px auto 0;
+    height: 1px;
+    background: var(--border);
+    overflow: hidden;
+  }
+  .progress-fill {
+    height: 100%;
+    background: var(--blood);
+    transition: width 0.6s ease;
+    width: 0%;
+  }
+  .final-reveal {
+    display: none;
+    text-align: center;
+    max-width: 480px;
+    margin: 40px auto;
+    padding: 0 20px 60px;
+  }
+  .final-reveal.show { display: block; }
+  .final-stamp-big {
+    font-family: 'Special Elite', serif;
+    font-size: 11px;
+    letter-spacing: 0.5em;
+    color: var(--blood);
+    text-transform: uppercase;
+    margin-bottom: 28px;
+    opacity: 0;
+    animation: fadeUp 0.8s ease 0.3s forwards;
+  }
+  .final-title {
+    font-family: 'Special Elite', serif;
+    font-size: 24px;
+    letter-spacing: 0.15em;
+    color: var(--ink);
+    text-transform: uppercase;
+    margin-bottom: 20px;
+    opacity: 0;
+    animation: fadeUp 0.8s ease 0.6s forwards;
+  }
+  .final-text {
+    font-size: 15px;
+    line-height: 1.8;
+    color: var(--ink-dim);
+    font-style: italic;
+    opacity: 0;
+    animation: fadeUp 0.8s ease 0.9s forwards;
+  }
+  .final-link {
+    display: inline-block;
+    margin-top: 36px;
+    font-family: 'Special Elite', serif;
+    font-size: 10px;
+    letter-spacing: 0.4em;
+    color: var(--blood);
+    text-decoration: none;
+    text-transform: uppercase;
+    border-bottom: 1px solid var(--blood-d);
+    padding-bottom: 2px;
+    opacity: 0;
+    animation: fadeUp 0.8s ease 1.4s forwards;
+  }
+  .final-back-btn {
+    display: block;
+    margin: 32px auto 0;
+    background: none;
+    border: 1px solid var(--border);
+    color: var(--ink-dim);
+    font-family: 'Special Elite', serif;
+    font-size: 9px;
+    letter-spacing: 0.25em;
+    padding: 8px 18px;
+    cursor: pointer;
+    text-transform: uppercase;
+    opacity: 0;
+    animation: fadeUp 0.8s ease 1.8s forwards;
+    transition: border-color 0.2s, color 0.2s;
+  }
+  .final-back-btn:hover { border-color: var(--ink-dim); color: var(--ink); }
+  .return-to-final {
+    display: none;
+    text-align: center;
+    margin-top: 16px;
+    padding-bottom: 40px;
+  }
+  .return-btn {
+    background: none;
+    border: 1px solid var(--border);
+    color: var(--blood);
+    font-family: 'Special Elite', serif;
+    font-size: 9px;
+    letter-spacing: 0.25em;
+    padding: 8px 18px;
+    cursor: pointer;
+    text-transform: uppercase;
+    transition: border-color 0.2s, color 0.2s;
+  }
+  .return-btn:hover { border-color: var(--blood); }
+  @keyframes shake {
+    0%,100% { transform: translateX(0); }
+    20%      { transform: translateX(-6px); }
+    40%      { transform: translateX(5px); }
+    60%      { transform: translateX(-4px); }
+    80%      { transform: translateX(3px); }
+  }
+  @keyframes fadeUp {
+    from { opacity: 0; transform: translateY(12px); }
+    to   { opacity: 1; transform: translateY(0); }
+  }
+  .swipe-hint {
+    text-align: center;
+    font-size: 10px;
+    letter-spacing: 0.25em;
+    color: var(--border);
+    margin-top: 10px;
+    font-family: 'Special Elite', serif;
+    text-transform: uppercase;
+  }
+</style>
+</head>
+<body>
+
+<div class="header">
+  <div class="header-label">Jornal Atlas · Arquivo Restrito</div>
+  <div class="header-title">ENIGMA</div>
+  <div class="header-sub">Nove campos. As respostas não estão aqui dentro.</div>
+</div>
+
+<div class="carousel-wrap" id="carouselWrap">
+  <div class="carousel">
+    <div class="cards-track" id="cardsTrack">
+
+      <div class="card" data-idx="0">
+        <div class="card-num">Campo I · de IX</div>
+        <div class="card-clue">
+          O que o silêncio não consegue esconder.<br>
+          Procure onde o som deixou de existir,<br>
+          mas a imagem permaneceu.
+        </div>
+        <div class="card-input-wrap">
+          <input class="card-input" type="text" maxlength="20" placeholder="resposta..." autocomplete="off" autocorrect="off" spellcheck="false">
+          <button class="card-btn">confirmar</button>
+        </div>
+        <div class="card-status"></div>
+        <div class="card-stamp"><svg viewBox="0 0 24 24"><path d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41z"/></svg></div>
+      </div>
+
+      <div class="card" data-idx="1">
+        <div class="card-num">Campo II · de IX</div>
+        <div class="card-clue">
+          Sete frases. Sete primeiras letras.<br>
+          Uma palavra que diz o que aconteceu<br>
+          com o que não deveria ter existido.
+        </div>
+        <div class="card-input-wrap">
+          <input class="card-input" type="text" maxlength="20" placeholder="resposta..." autocomplete="off" autocorrect="off" spellcheck="false">
+          <button class="card-btn">confirmar</button>
+        </div>
+        <div class="card-status"></div>
+        <div class="card-stamp"><svg viewBox="0 0 24 24"><path d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41z"/></svg></div>
+      </div>
+
+      <div class="card" data-idx="2">
+        <div class="card-num">Campo III · de IX</div>
+        <div class="card-clue">
+          Existe uma página que o jornal não registrou.<br>
+          Ela está em branco — mas não está vazia.<br>
+          O que nunca foi publicado ainda existe.<br>
+          Leia o que não foi escrito.
+        </div>
+        <div class="card-input-wrap">
+          <input class="card-input" type="text" maxlength="20" placeholder="resposta..." autocomplete="off" autocorrect="off" spellcheck="false">
+          <button class="card-btn">confirmar</button>
+        </div>
+        <div class="card-status"></div>
+        <div class="card-stamp"><svg viewBox="0 0 24 24"><path d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41z"/></svg></div>
+      </div>
+
+      <div class="card" data-idx="3">
+        <div class="card-num">Campo IV · de IX</div>
+        <div class="card-clue">
+          Esta página existe em um momento específico.<br>
+          Não antes. Não depois.<br>
+          Volte quando o jornal fechar.<br>
+          Encontre quem vigia quando ninguém está olhando.
+        </div>
+        <div class="card-input-wrap">
+          <input class="card-input" type="text" maxlength="20" placeholder="resposta..." autocomplete="off" autocorrect="off" spellcheck="false">
+          <button class="card-btn">confirmar</button>
+        </div>
+        <div class="card-status"></div>
+        <div class="card-stamp"><svg viewBox="0 0 24 24"><path d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41z"/></svg></div>
+      </div>
+
+      <div class="card" data-idx="4">
+        <div class="card-num">Campo V · de IX</div>
+        <div class="card-clue">
+          O dossier corrompido guarda uma verdade:<br>
+          o arquivo não mostra o que aconteceu,<br>
+          mostra o que foi construído para que<br>
+          você achasse que aconteceu.
+        </div>
+        <div class="card-input-wrap">
+          <input class="card-input" type="text" maxlength="20" placeholder="resposta..." autocomplete="off" autocorrect="off" spellcheck="false">
+          <button class="card-btn">confirmar</button>
+        </div>
+        <div class="card-status"></div>
+        <div class="card-stamp"><svg viewBox="0 0 24 24"><path d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41z"/></svg></div>
+      </div>
+
+      <div class="card" data-idx="5">
+        <div class="card-num">Campo VI · de IX</div>
+        <div class="card-clue">
+          Às vezes um beco sem saída<br>
+          não é apenas um beco sem saída.<br>
+          O que você procura pode estar<br>
+          exatamente onde você não devia estar.
+        </div>
+        <div class="card-input-wrap">
+          <input class="card-input" type="text" maxlength="20" placeholder="resposta..." autocomplete="off" autocorrect="off" spellcheck="false">
+          <button class="card-btn">confirmar</button>
+        </div>
+        <div class="card-status"></div>
+        <div class="card-stamp"><svg viewBox="0 0 24 24"><path d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41z"/></svg></div>
+      </div>
+
+      <div class="card" data-idx="6">
+        <div class="card-num">Campo VII · de IX</div>
+        <div class="card-clue">
+          O arquivo guarda a entrada final.<br>
+          Não como edição, como algo anterior.<br>
+          O que o Projeto IX sempre foi,<br>
+          antes de ter nome.
+        </div>
+        <div class="card-input-wrap">
+          <input class="card-input" type="text" maxlength="20" placeholder="resposta..." autocomplete="off" autocorrect="off" spellcheck="false">
+          <button class="card-btn">confirmar</button>
+        </div>
+        <div class="card-status"></div>
+        <div class="card-stamp"><svg viewBox="0 0 24 24"><path d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41z"/></svg></div>
+      </div>
+
+      <div class="card" data-idx="7">
+        <div class="card-num">Campo VIII · de IX</div>
+        <div class="card-clue">
+          O guardião das portas fechadas<br>
+          deixou uma mensagem nas margens.<br>
+          O robô leu. Você também pode.<br>
+          Decodifique o que está escrito lá.
+        </div>
+        <div class="card-input-wrap">
+          <input class="card-input" type="text" maxlength="20" placeholder="resposta..." autocomplete="off" autocorrect="off" spellcheck="false">
+          <button class="card-btn">confirmar</button>
+        </div>
+        <div class="card-status"></div>
+        <div class="card-stamp"><svg viewBox="0 0 24 24"><path d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41z"/></svg></div>
+      </div>
+
+      <div class="card" data-idx="8">
+        <div class="card-num">Campo IX · de IX</div>
+        <div class="card-clue">
+          A armadilha também tem fundo.<br>
+          Quem cai dentro olha para cima e vê a saída.<br>
+          Quem olha para baixo, encontra outra coisa.<br>
+          Inspecione o que não era para você ver.
+        </div>
+        <div class="card-input-wrap">
+          <input class="card-input" type="text" maxlength="20" placeholder="resposta..." autocomplete="off" autocorrect="off" spellcheck="false">
+          <button class="card-btn">confirmar</button>
+        </div>
+        <div class="card-status"></div>
+        <div class="card-stamp"><svg viewBox="0 0 24 24"><path d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41z"/></svg></div>
+      </div>
+
+    </div>
+  </div>
+
+  <div class="swipe-hint">deslize para navegar</div>
+  <div class="carousel-nav">
+    <button class="nav-btn" id="prevBtn" disabled>&#8592;</button>
+    <div class="dots" id="dots"></div>
+    <button class="nav-btn" id="nextBtn">&#8594;</button>
+  </div>
+</div>
+
+<div class="progress-line" id="progressLine">0 / 9 campos revelados</div>
+<div class="progress-bar"><div class="progress-fill" id="progressFill"></div></div>
+
+<div class="final-reveal" id="finalReveal">
+  <div class="final-stamp-big">fragmento completo</div>
+  <div class="final-title">O Arquivo Está Aberto</div>
+  <div class="final-text">
+    Você reuniu os nove fragmentos.<br>
+    O Arquivista estava esperando.<br><br>
+    <em>O que ficou entre os dias nunca foi perdido.<br>
+    Apenas guardado.</em>
+  </div>
+  <a class="final-link" href="https://projetoxi.vercel.app" target="_blank">
+    acessar o arquivo — projetoxi.vercel.app
+  </a>
+  <button class="final-back-btn" id="finalBackBtn">↩ ver campos resolvidos</button>
+</div>
+
+<div class="return-to-final" id="returnToFinal">
+  <button class="return-btn" id="returnFinalBtn">ver conclusão →</button>
+</div>
+
+<script>
+(function() {
+  'use strict';
+
+  const _H = [
+    '89a4e3cd073839cabceb3c78f0595b51b935e977c45070c7ef99f64fc813c4ed',
+    '222e2e4dfece5fb802230ff4ea54d51ae55c6602bd2138d85f6ae2988535f58c',
+    'dc60f28e858ebb660bf5fe313f9cf5c3354334d9ef51e813f122b0b729ed89de',
+    'd66ea6c8eae4d5e5100c5775ee8ce0141fea4110a29cfa4c584bd5d49b425af2',
+    'd06a4a3ee8c24320db5c714450e9542b986adc8a318ea4bae62207bb86fdbba0',
+    'f932c4ddaf8644a6ebee689d39791a861e2d32c2f4818593e764702bb9a2d79d',
+    'cda3fb26b65435bb45a47578850c7f4b83480970434a0617f41013340f49ef27',
+    'cc0596b74dd0c5026711baf235c2a7d3c43a532eeb61b53e2ee12822be2b3f9b',
+    '1cee8d6c378c4ac9ac7da866008e394f27e8eb37f508b511cb342a03f0584aa2'
+  ];
+
+  const TOTAL = 9;
+  const solved = new Array(TOTAL).fill(false);
+  let current = 0;
+
+  try {
+    const saved = JSON.parse(localStorage.getItem('enigma_state') || '[]');
+    if (Array.isArray(saved)) saved.forEach((v, i) => { if (i < TOTAL && v) solved[i] = true; });
+  } catch(_) {}
+
+  async function sha256hex(str) {
+    const buf = await crypto.subtle.digest('SHA-256', new TextEncoder().encode(str));
+    return Array.from(new Uint8Array(buf)).map(b => b.toString(16).padStart(2,'0')).join('');
+  }
+
+  function normalize(s) {
+    return s.trim().toUpperCase()
+      .normalize('NFD').replace(/[̀-ͯ]/g, '')
+      .replace(/[^A-Z]/g, '');
+  }
+
+  const track    = document.getElementById('cardsTrack');
+  const dotsEl   = document.getElementById('dots');
+  const prevBtn  = document.getElementById('prevBtn');
+  const nextBtn  = document.getElementById('nextBtn');
+  const progLine = document.getElementById('progressLine');
+  const progFill = document.getElementById('progressFill');
+  const finalEl  = document.getElementById('finalReveal');
+  const cards    = Array.from(document.querySelectorAll('.card'));
+
+  cards.forEach((_, i) => {
+    const d = document.createElement('div');
+    d.className = 'dot' + (i === 0 ? ' active' : '') + (solved[i] ? ' done' : '');
+    dotsEl.appendChild(d);
+  });
+
+  function goTo(idx) {
+    if (idx < 0 || idx >= TOTAL) return;
+    current = idx;
+    track.style.transform = 'translateX(-' + (idx * 100) + '%)';
+    Array.from(dotsEl.children).forEach((d, i) => d.classList.toggle('active', i === idx));
+    prevBtn.disabled = idx === 0;
+    nextBtn.disabled = idx === TOTAL - 1;
+  }
+
+  prevBtn.addEventListener('click', () => goTo(current - 1));
+  nextBtn.addEventListener('click', () => goTo(current + 1));
+
+  let touchStart = 0;
+  track.addEventListener('touchstart', e => { touchStart = e.touches[0].clientX; }, { passive: true });
+  track.addEventListener('touchend', e => {
+    const dx = e.changedTouches[0].clientX - touchStart;
+    if (Math.abs(dx) > 40) goTo(current + (dx < 0 ? 1 : -1));
+  }, { passive: true });
+
+  let alreadyFinished = false;
+
+  function updateProgress() {
+    const n = solved.filter(Boolean).length;
+    progLine.textContent = n + ' / 9 campos revelados';
+    progFill.style.width = (n / TOTAL * 100) + '%';
+    Array.from(dotsEl.children).forEach((d, i) => d.classList.toggle('done', solved[i]));
+    try { localStorage.setItem('enigma_state', JSON.stringify(solved)); } catch(_) {}
+    if (n === TOTAL && !alreadyFinished) {
+      alreadyFinished = true;
+      onAllSolved();
+    }
+  }
+
+  const wrapEl    = document.querySelector('.carousel-wrap');
+  const pLineEl   = document.querySelector('.progress-line');
+  const pBarEl    = document.querySelector('.progress-bar');
+  const returnDiv = document.getElementById('returnToFinal');
+
+  function showFinal() {
+    wrapEl.style.display  = 'none';
+    pLineEl.style.display = 'none';
+    pBarEl.style.display  = 'none';
+    returnDiv.style.display = 'none';
+    finalEl.classList.add('show');
+  }
+  function showCarousel() {
+    finalEl.classList.remove('show');
+    wrapEl.style.display  = '';
+    pLineEl.style.display = '';
+    pBarEl.style.display  = '';
+    returnDiv.style.display = 'block';
+  }
+
+  document.getElementById('finalBackBtn').addEventListener('click', showCarousel);
+  document.getElementById('returnFinalBtn').addEventListener('click', showFinal);
+
+  function onAllSolved() {
+    try { localStorage.setItem('enigma_complete', '1'); } catch(_) {}
+    setTimeout(showFinal, 700);
+  }
+
+  function markSolved(card, idx, instant) {
+    const inp   = card.querySelector('.card-input');
+    const btn   = card.querySelector('.card-btn');
+    const stat  = card.querySelector('.card-status');
+    const stamp = card.querySelector('.card-stamp');
+    inp.disabled = true;
+    inp.classList.add('correct');
+    btn.disabled = true;
+    stat.textContent = '· confirmado ·';
+    stat.className = 'card-status ok';
+    setTimeout(() => stamp.classList.add('show'), instant ? 0 : 200);
+  }
+
+  async function handleSubmit(card, idx) {
+    const inp  = card.querySelector('.card-input');
+    const btn  = card.querySelector('.card-btn');
+    const stat = card.querySelector('.card-status');
+    if (inp.disabled) return;
+    const val = normalize(inp.value);
+    if (!val) return;
+    btn.disabled = true;
+    stat.textContent = '...';
+    stat.className = 'card-status';
+    try {
+      const h = await sha256hex(val);
+      if (h === _H[idx]) {
+        solved[idx] = true;
+        markSolved(card, idx, false);
+        updateProgress();
+      } else {
+        inp.classList.add('wrong');
+        setTimeout(() => inp.classList.remove('wrong'), 380);
+        stat.textContent = 'resposta incorreta.';
+        stat.className = 'card-status err';
+        btn.disabled = false;
+      }
+    } catch(_) {
+      stat.textContent = 'erro. tente novamente.';
+      stat.className = 'card-status err';
+      btn.disabled = false;
+    }
+  }
+
+  cards.forEach((card, idx) => {
+    if (solved[idx]) markSolved(card, idx, true);
+    const btn = card.querySelector('.card-btn');
+    const inp = card.querySelector('.card-input');
+    btn.addEventListener('click', () => handleSubmit(card, idx));
+    inp.addEventListener('keydown', e => { if (e.key === 'Enter') handleSubmit(card, idx); });
+  });
+
+  updateProgress();
+})();
+</script>
+</body>
+</html>

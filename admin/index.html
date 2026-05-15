@@ -1,0 +1,41 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>401 — Acesso Negado</title>
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body {
+    background: #080604;
+    color: #4a7a3a;
+    font-family: 'Courier New', Courier, monospace;
+    font-size: 13px;
+    min-height: 100vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 20px;
+  }
+  .box { max-width: 440px; text-align: center; }
+  .code { font-size: 48px; color: #2d4022; letter-spacing: 0.1em; margin-bottom: 16px; }
+  .msg { color: #6aaa52; margin-bottom: 8px; }
+  .sub { color: #2d4022; font-size: 11px; margin-top: 20px; }
+  a { color: #4a7a3a; }
+  a:hover { color: #6aaa52; }
+</style>
+</head>
+<body>
+<!-- 61 62 69 73 6d 6f -->
+<div class="box">
+  <div class="code">401</div>
+  <div class="msg">&gt; Acesso não autorizado.</div>
+  <div class="msg">&gt; Essa área não é para administradores.</div>
+  <div class="sub">
+    Se você está procurando o arquivo,<br>
+    a senha não está aqui.<br><br>
+    <a href="/arquivo">/arquivo</a> pode te ajudar.
+  </div>
+</div>
+</body>
+</html>

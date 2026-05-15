@@ -1,0 +1,5 @@
+User-agent: *
+Disallow: /arquivo
+Disallow: /11
+Disallow: /admin
+# VmlzaXRhbnRlIGN1cmlvc28uCk8gcXVlIHZvY8OqIHByb2N1cmEgbsOjbyBlc3TDoSBhcXVpLgpNYXMgdm9jw6ogasOhIGVzdMOhIHBlcnRvLgpSQVNUUk8uCg==

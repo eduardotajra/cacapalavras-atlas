@@ -1,0 +1,186 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>PROJETO IX</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Special+Elite&family=Crimson+Text:ital,wght@0,400;1,400&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg:    #09070a;
+    --paper: #100c14;
+    --ink:   #b8a8cc;
+    --dim:   #4a3858;
+    --blood: #7e1419;
+    --purple:#6a3a8a;
+  }
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  html, body {
+    min-height: 100%;
+    background: var(--bg);
+    color: var(--ink);
+    font-family: 'Crimson Text', Georgia, serif;
+    -webkit-font-smoothing: antialiased;
+  }
+  .page {
+    max-width: 560px;
+    margin: 0 auto;
+    padding: 56px 24px 80px;
+  }
+  .label {
+    font-family: 'Special Elite', serif;
+    font-size: 9px;
+    letter-spacing: 0.5em;
+    color: var(--dim);
+    text-transform: uppercase;
+    margin-bottom: 14px;
+  }
+  .title {
+    font-family: 'Special Elite', serif;
+    font-size: 32px;
+    letter-spacing: 0.15em;
+    text-transform: uppercase;
+    margin-bottom: 6px;
+    color: var(--ink);
+  }
+  .title-xi {
+    font-family: 'Special Elite', serif;
+    font-size: 14px;
+    letter-spacing: 0.4em;
+    color: var(--purple);
+    text-transform: uppercase;
+    margin-bottom: 32px;
+    opacity: 0.8;
+  }
+  .divider {
+    width: 48px;
+    height: 1px;
+    background: var(--dim);
+    margin: 0 0 32px;
+  }
+
+  /* Grid corrompida */
+  .grid-wrap {
+    margin: 0 0 40px;
+    overflow: hidden;
+  }
+  .grid-label {
+    font-family: 'Special Elite', serif;
+    font-size: 9px;
+    letter-spacing: 0.35em;
+    color: var(--dim);
+    text-transform: uppercase;
+    margin-bottom: 10px;
+  }
+  .corrupted-grid {
+    font-family: 'Courier New', monospace;
+    font-size: 11px;
+    letter-spacing: 0.18em;
+    line-height: 1.9;
+    color: var(--dim);
+    word-break: break-all;
+  }
+  .corrupted-grid .highlight {
+    color: var(--purple);
+    opacity: 0.9;
+  }
+  .corrupted-grid .glitch {
+    animation: glitch 4s ease infinite;
+    display: inline-block;
+  }
+
+  .text-block {
+    font-size: 15px;
+    line-height: 2;
+    color: var(--dim);
+    font-style: italic;
+    margin-bottom: 28px;
+  }
+  .text-block strong {
+    font-style: normal;
+    color: var(--ink);
+  }
+  .sig {
+    font-family: 'Special Elite', serif;
+    font-size: 11px;
+    letter-spacing: 0.25em;
+    color: var(--dim);
+    text-transform: uppercase;
+    margin-top: 36px;
+    opacity: 0.6;
+  }
+  .back {
+    display: inline-block;
+    margin-top: 40px;
+    font-family: 'Special Elite', serif;
+    font-size: 9px;
+    letter-spacing: 0.3em;
+    color: var(--dim);
+    text-decoration: none;
+    text-transform: uppercase;
+    opacity: 0.4;
+    border-bottom: 1px solid currentColor;
+    padding-bottom: 1px;
+  }
+  .back:hover { opacity: 0.7; }
+
+  @keyframes glitch {
+    0%,90%,100% { transform: none; opacity: 1; }
+    91%   { transform: translateX(-2px); opacity: 0.7; }
+    92%   { transform: translateX(2px) skewX(2deg); opacity: 0.9; }
+    93%   { transform: none; opacity: 0.5; }
+    94%   { transform: translateX(-1px); opacity: 1; }
+  }
+</style>
+</head>
+<body>
+<div class="page">
+  <div class="label">Jornal Atlas · Dossier Classificado</div>
+  <div class="title">PROJETO</div>
+  <div class="title-xi">I X</div>
+  <div class="divider"></div>
+
+  <div class="grid-wrap">
+    <div class="grid-label">fragmento — grade corrompida</div>
+    <div class="corrupted-grid">
+X Z M B V X I Z M B X P V M X X<br>
+L X H V R X M V B V N P X <span class="highlight glitch">P</span> V N F<br>
+B G W X X Z P M T L H V M M B L<br>
+X M W B I V P L X H Z <span class="highlight glitch">R</span> T L H V<br>
+N B P V X H Z P M B X V N I Q P<br>
+M X H V R S M B L X M W <span class="highlight glitch">O</span> I V P<br>
+L X H Z P T L H V M X X L G A H<br>
+X L Z P M B Z V X I Z M B X P V<br>
+M X X L X H V R X M V <span class="highlight glitch">J</span> V N P X<br>
+P V N F B G W X X Z P M T L H V<br>
+M M B L X M W B I V P L X <span class="highlight glitch">E</span> Z P<br>
+T L H V N B P V X H Z P M B X V<br>
+    </div>
+  </div>
+
+  <div class="text-block">
+    O Projeto IX começou antes da primeira edição.<br><br>
+    <strong>Não era um número. Era uma ideia.</strong><br><br>
+    A nona intenção nunca foi publicada.<br>
+    Ficou entre os dias, entre o oito e o dez.<br><br>
+    <em>Geraldo sempre soube. Sempre observou.<br>
+    Mas quem observa o Geraldo?</em>
+  </div>
+
+  <div class="text-block" style="font-size:13px; opacity:0.6;">
+    Se você encontrou isso através do caracol,<br>
+    sabe que ele guarda mais do que aparenta.<br>
+    O dossier completo existe em outro lugar.<br><br>
+    Complete o enigma. A porta abre.
+  </div>
+
+  <!-- espelho: 4553504554484F -->
+  <div style="font-family:'Special Elite',serif;font-size:11px;letter-spacing:0.4em;color:#2a1838;text-transform:uppercase;margin-top:40px;opacity:0.18;text-align:center;user-select:none;" aria-hidden="true">ESPELHO</div>
+
+  <div class="sig">— arquivista · classificado</div>
+  <br>
+  <a class="back" href="/">← voltar</a>
+</div>
+</body>
+</html>
