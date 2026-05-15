@@ -3058,6 +3058,11 @@
   let lastSoundCell = null;
 
   function renderDay(key) {
+    if (key === '11-05' && !enigmaUnlocked) {
+      activateTab('04-05');
+      renderDay('04-05');
+      return;
+    }
     const day = DAYS.find(d => d.key === key);
     if (!day) {
       renderComingSoon();
@@ -3909,11 +3914,14 @@
   // Botão de arquivo de edições do caça-palavras
   document.getElementById('cacaArchiveBtn')?.addEventListener('click', () => openModal('cacaArchive'));
 
+  const enigmaUnlocked = (() => { try { return localStorage.getItem('enigma_complete') === '1'; } catch(_) { return false; } })();
+
   function cacaOpenArchive() {
     const host = document.getElementById('cacaArchiveList');
     if (!host) return;
     const currentDay = (DAYS.find(d => d.key === document.body.dataset.active) || DAYS[0]);
-    const items = DAYS.slice().reverse().map(day => {
+    const visibleDays = enigmaUnlocked ? DAYS : DAYS.filter(d => d.key !== '11-05');
+    const items = visibleDays.slice().reverse().map(day => {
       const isActive = day.key === currentDay.key;
       const subtitle = (day.subtitle || '').replace(/^EDIÇÃO\s+Nº\s+\d+\s*[—-]\s*/, '');
       const wordsPreview = (day.words || []).slice(0, 5).join(', ') + (day.words && day.words.length > 5 ? '…' : '');
