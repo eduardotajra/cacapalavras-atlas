@@ -624,10 +624,30 @@ function tprint(text, cls){
   o.scrollTop = o.scrollHeight;
 }
 
+const cmdHistory = [];
+let cmdHistIdx = -1;
+
 $('cmd').addEventListener('keydown', function(e){
+  if(e.key === 'ArrowUp'){
+    e.preventDefault();
+    if(cmdHistIdx < cmdHistory.length - 1){
+      cmdHistIdx++;
+      this.value = cmdHistory[cmdHistIdx];
+      setTimeout(() => this.setSelectionRange(this.value.length, this.value.length), 0);
+    }
+    return;
+  }
+  if(e.key === 'ArrowDown'){
+    e.preventDefault();
+    if(cmdHistIdx > 0){ cmdHistIdx--; this.value = cmdHistory[cmdHistIdx]; }
+    else { cmdHistIdx = -1; this.value = ''; }
+    return;
+  }
   if(e.key !== 'Enter') return;
   const raw = this.value.trim();
   if(!raw) return;
+  cmdHistory.unshift(raw);
+  cmdHistIdx = -1;
   const inp = document.createElement('div');
   inp.className = 'tl inp';
   inp.textContent = 'atlas@srv:~$ ' + raw;
