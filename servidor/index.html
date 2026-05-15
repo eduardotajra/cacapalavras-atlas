@@ -526,7 +526,7 @@ sessao2(){ return `<div class="lc">
   <div><span class="ts">[23:05:59]</span>  <span class="arq">&lt;Arquivista&gt;</span>  o log estava esperando por você.</div>
   <div><span class="ts">[23:06:12]</span>  <span class="usr">&lt;Visitante_02&gt;</span>  o que é o projeto ix</div>
   <div><span class="ts">[23:06:20]</span>  <span class="arq">&lt;Arquivista&gt;</span>  hoje é 11.</div>
-  <div><span class="ts">[23:06:24]</span>  <span class="arq">&lt;Arquivista&gt;</span>  o jornal tem uma página /11.</div>
+  <div><span class="ts">[23:06:24]</span>  <span class="arq">&lt;Arquivista&gt;</span>  o jornal tem uma página /9.</div>
   <div><span class="ts">[23:06:28]</span>  <span class="arq">&lt;Arquivista&gt;</span>  o servidor tem um bloco em Y:11.</div>
   <div><span class="ts">[23:06:32]</span>  <span class="arq">&lt;Arquivista&gt;</span>  11 é o número que não foi publicado.</div>
   <div><span class="ts">[23:06:45]</span>  <span class="usr">&lt;Visitante_02&gt;</span>  e o ix?</div>
@@ -565,7 +565,7 @@ nota(){ return `<div class="pw"><div class="paper">
   <span class="rx" onclick="this.classList.add('open')">A caverna em X:-312 Y:11 Z:88 corresponde ao fragmento XIII.</span></p>
   <p>Todas as coordenadas com Y:11 foram escolhidas intencionalmente.<br>
   11 é o número que o jornal não publicou.<br>
-  11 existe na página <span class="rx" onclick="this.classList.add('open'">/11</span> do atlas.<br>
+  9 existe na página <span class="rx" onclick="this.classList.add('open'">/9</span> do atlas.<br>
   11 existe como Y:11 em quatro pontos do mapa.</p>
   <p>O servidor não está aberto ao público.<br>
   Mas se você chegou a este log, você já encontrou o suficiente.</p>
@@ -596,19 +596,20 @@ mapa(){ return `<div class="pw"><div class="paper">
 </div></div>`; },
 
 enc(){ return `<div class="lc">
-  <span class="sep">── CIFRADO_ORIGEM.enc · ACESSO PARCIAL ────────────────────</span>
-  <div><span class="enc">4f 52 49 47 45 4d 20 44 4f 20 41 52 51 55 49 56 49 53 54 41</span></div>
+  <span class="sep">── CIFRADO_SRV.enc · ACESSO PARCIAL ───────────────────────</span>
+  <div><span class="enc">4c 41 43 55 4e 41 20 4e c3 83 4f 20 c3 89 20 55 4d 20 4c 55 47 41 52</span></div>
+  <div><span class="enc">c3 89 20 55 4d 41 20 41 55 53 c3 8a 4e 43 49 41 20 43 4f 4d 20 46 4f 52 4d 41</span></div>
   <div style="margin:4px 0"></div>
-  <div><span class="sys">decodificação parcial disponível:</span></div>
-  <div><span class="key">BLOCO_01</span>  <span class="val">ORIGEM DO ARQUIVISTA</span>  <span class="chk">✓ decodificado</span></div>
-  <div><span class="key">BLOCO_02</span>  <span class="enc">41 54 4c 41 53 20 4e c3 83 4f 20 c3 89 20</span>  <span class="sys">[requer chave]</span></div>
-  <div><span class="key">BLOCO_03</span>  <span class="enc">55 4d 20 4a 4f 52 4e 41 4c 2e</span>  <span class="sys">[requer chave]</span></div>
-  <div><span class="key">BLOCO_04</span>  <span class="enc">c3 89 20 55 4d 20 41 52 51 55 49 56 4f 2e</span>  <span class="sys">[requer chave]</span></div>
+  <div><span class="sys">decodificação parcial disponível (ASCII):</span></div>
+  <div><span class="key">SEGMENTO_A</span>  <span class="val">LACUNA NÃO É UM LUGAR</span>  <span class="chk">✓ legível</span></div>
+  <div><span class="key">SEGMENTO_B</span>  <span class="val">É UMA AUSÊNCIA COM FORMA</span>  <span class="chk">✓ legível</span></div>
+  <div><span class="key">SEGMENTO_C</span>  <span class="enc">4c 50 43 41 4e 44 20 2b 20 41 50 41 47 41 44 4f</span>  <span class="sys">[cifrado]</span></div>
+  <div><span class="key">SEGMENTO_D</span>  <span class="enc">58 3a 2d 33 31 32 20 59 3a 31 31 20 5a 3a 38 38</span>  <span class="sys">[cifrado]</span></div>
   <div style="margin:8px 0"></div>
-  <div class="sys">A chave para os blocos 2–4 está no fragmento II do enigma principal.</div>
-  <div class="sys">Se você já completou o enigma, você já tem a chave.</div>
+  <div class="sys">SEGMENTO_C: use a chave do fragmento II do enigma principal.</div>
+  <div class="sys">SEGMENTO_D: as coordenadas estão codificadas em ASCII.</div>
   <span class="sep">──────────────────────────────────────────────────────────────</span>
-  <div class="fin">[ acesso completo requer enigma completo ]</div>
+  <div class="fin">[ decode SEGMENTO_D no terminal: decode 58 3a 2d 33 31 32 20 59 3a 31 31 20 5a 3a 38 38 ]</div>
 </div>`; },
 
 };
@@ -636,8 +637,21 @@ $('cmd').addEventListener('keydown', function(e){
   $('tout').scrollTop = $('tout').scrollHeight;
 });
 
-const FILES = {coords:'coords',chat1:'sessao',chat2:'sessao2',nota:'nota',mapa:'mapa',enc:'enc',
-  coordenadas:'coords',sessao:'sessao',sessao2:'sessao2'};
+// substring-based file lookup: matches any key that appears in the arg
+const FILE_KEYS = [
+  ['coord',        'coords'],
+  ['08',           'sessao'],
+  ['chat_sessao_0','sessao'],
+  ['11',           'sessao2'],
+  ['chat_sessao_1','sessao2'],
+  ['nota',         'nota'],
+  ['campo',        'nota'],
+  ['mapa',         'mapa'],
+  ['caverna',      'mapa'],
+  ['cifrado',      'enc'],
+  ['enc',          'enc'],
+  ['srv',          'enc'],
+];
 
 function processCmd(raw){
   const parts = raw.split(/\s+/);
@@ -658,14 +672,18 @@ function processCmd(raw){
   }
   if(cmd==='CLEAR'){ $('tout').innerHTML=''; return; }
   if(cmd==='LS'){
-    ['── /srv/atlas-minecraft/logs ──────────────',
-     '🗺️  COORDENADAS_ATLAS.log     1.8 KB',
-     '💬  CHAT_SESSAO_08-05.log     2.2 KB',
-     '💬  CHAT_SESSAO_11-05.log     2.6 KB',
-     '📄  NOTA_CAMPO.doc            1.1 KB',
-     '🏔️  MAPA_CAVERNA.doc          1.4 KB  '+(opened.size>=3?'':'[bloqueado até 3 leituras]'),
-     '🔒  CIFRADO_ORIGEM.enc         ???',
-    ].forEach((t,i) => tprint(t, i===0?'dim':''));
+    const lines = [
+      '── /srv/atlas-minecraft/logs ──────────────',
+      '🗺️  COORDENADAS_ATLAS.log     1.8 KB',
+      '💬  CHAT_SESSAO_08-05.log     2.2 KB',
+      '💬  CHAT_SESSAO_11-05.log     2.6 KB',
+      '📄  NOTA_CAMPO.doc            1.1 KB',
+    ];
+    if(opened.size >= 3) lines.push('🏔️  MAPA_CAVERNA.doc          1.4 KB');
+    if(opened.size >= 5) lines.push('🔒  CIFRADO_SRV.enc            ??? KB');
+    lines.push('──────────────────────────────────────────');
+    lines.push(opened.size + ' / 5 arquivos lidos');
+    lines.forEach((t,i) => tprint(t, i===0?'dim':''));
     return;
   }
   if(cmd==='WHOAMI'){
@@ -680,9 +698,16 @@ function processCmd(raw){
     return;
   }
   if(cmd==='CAT'){
-    const key = FILES[arg.toLowerCase().replace(/[^a-z0-9]/g,'')];
+    const argLow = arg.toLowerCase();
+    let key = null;
+    for(const [k, v] of FILE_KEYS){
+      if(argLow.includes(k)){ key = v; break; }
+    }
     if(key){ openFile(key); tprint('abrindo '+arg+'...','dim'); }
-    else tprint('arquivo não encontrado: '+arg,'err');
+    else {
+      tprint('arquivo não encontrado: '+arg,'err');
+      tprint('use ls para ver os arquivos disponíveis.','dim');
+    }
     return;
   }
   if(cmd==='DECODE'){
