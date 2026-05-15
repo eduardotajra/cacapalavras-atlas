@@ -5505,16 +5505,17 @@
     cloudReady = true;
     window.atlasCloud.onAuthChange(async (user) => {
       if (!user) {
-        // Logout: limpa estado local e recarrega para resetar memória
+        // Logout: só recarrega se havia uma sessão ativa (evita loop)
         try {
+          const wasLoggedIn = !!localStorage.getItem('atlas-uid');
           localStorage.removeItem(STORAGE_KEY);
           localStorage.removeItem('enigma_complete');
           localStorage.removeItem('atlas-uid');
+          if (wasLoggedIn) { window.location.reload(); return; }
         } catch(_) {}
         authUser = null;
         authProfile = null;
         setAuthUI();
-        window.location.reload();
         return;
       }
 
