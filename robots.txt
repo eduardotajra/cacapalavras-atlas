@@ -5,4 +5,5 @@ Disallow: /9
 Disallow: /admin
 Disallow: /vigilia
 Disallow: /servidor
+# os bots não chegam aqui. mas os humanos têm o seu próprio arquivo.
 # VmlzaXRhbnRlIGN1cmlvc28uCk8gcXVlIHZvY8OqIHByb2N1cmEgbsOjbyBlc3TDoSBhcXVpLgpNYXMgdm9jw6ogasOhIGVzdMOhIHBlcnRvLgpSQVNUUk8uCg==

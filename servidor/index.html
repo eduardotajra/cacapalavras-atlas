@@ -292,6 +292,12 @@ body { animation: flicker 12s ease-in-out infinite; }
           <span class="fi-name">CIFRADO_ORIGEM.enc</span>
         </div>
 
+        <div class="fi locked" title="acesso negado">
+          <span class="fi-ico">📄</span>
+          <span class="fi-name">██████████.txt</span>
+          <span class="fi-sub">RESTRITO</span>
+        </div>
+
       </nav>
     </aside>
 
@@ -443,6 +449,7 @@ function openFile(key){
 
 function buildContent(key){
   const META = {
+    robots:  ['robots.txt',            'SISTEMA · ATLAS-SRV',     'recuperado do cache'],
     coords:  ['COORDENADAS_ATLAS.log', 'SISTEMA LOG · ATLAS-SRV', 'Atualizado: 13/05/2026'],
     sessao:  ['CHAT_SESSAO_08-05.log', 'CHAT LOG · ATLAS-MINECRAFT', 'Data: 08/05/2026'],
     sessao2: ['CHAT_SESSAO_11-05.log', 'CHAT LOG · ATLAS-MINECRAFT', 'Data: 11/05/2026'],
@@ -459,6 +466,21 @@ function buildContent(key){
 }
 
 const CONTENTS = {
+
+robots(){ return `<div class="lc">
+  <span class="sep">── robots.txt ─────────────────────────────────────────────</span>
+  <div>User-agent: *</div>
+  <div>Disallow: /arquivo</div>
+  <div>Disallow: /enigma</div>
+  <div>Disallow: /9</div>
+  <div>Disallow: /admin</div>
+  <div>Disallow: /vigilia</div>
+  <div>Disallow: /servidor</div>
+  <div style="margin:6px 0"></div>
+  <div><span class="dim"># os robôs têm as suas regras.</span></div>
+  <div><span class="dim"># os humanos têm as suas histórias.</span></div>
+  <span class="sep">──────────────────────────────────────────────────────────────</span>
+</div>`; },
 
 coords(){ return `<div class="lc">
   <span class="sep">── ATLAS MINECRAFT · COORDENADAS MAPEADAS ─────────────────</span>
@@ -671,6 +693,7 @@ const FILE_KEYS = [
   ['cifrado',      'enc'],
   ['enc',          'enc'],
   ['srv',          'enc'],
+  ['robots',       'robots'],
 ];
 
 function processCmd(raw){
@@ -701,6 +724,7 @@ function processCmd(raw){
     ];
     if(opened.size >= 3) lines.push('🏔️  MAPA_CAVERNA.doc          1.4 KB');
     if(opened.size >= 5) lines.push('🔒  CIFRADO_SRV.enc            ??? KB');
+    lines.push('📄  ██████████.txt            ???      [RESTRITO]');
     lines.push('──────────────────────────────────────────');
     lines.push(opened.size + ' / 5 arquivos lidos');
     lines.forEach((t,i) => tprint(t, i===0?'dim':''));
