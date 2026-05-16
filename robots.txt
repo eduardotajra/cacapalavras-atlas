@@ -4,4 +4,5 @@ Disallow: /enigma
 Disallow: /9
 Disallow: /admin
 Disallow: /vigilia
+Disallow: /servidor
 # VmlzaXRhbnRlIGN1cmlvc28uCk8gcXVlIHZvY8OqIHByb2N1cmEgbsOjbyBlc3TDoSBhcXVpLgpNYXMgdm9jw6ogasOhIGVzdMOhIHBlcnRvLgpSQVNUUk8uCg==
