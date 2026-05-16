@@ -597,9 +597,7 @@
     <em>O que ficou entre os dias nunca foi perdido.<br>
     Apenas guardado.</em>
   </div>
-  <a class="final-link" href="https://projetoix.vercel.app" target="_blank">
-    acessar o arquivo — projetoix.vercel.app
-  </a>
+  <a class="final-link" id="finalLink" target="_blank"></a>
   <div class="final-hint">
     <span class="hint-label">fragmento XIV</span><br>
     no arquivo, há algo selado.<br>
@@ -718,6 +716,13 @@
     pBarEl.style.display  = 'none';
     returnDiv.style.display = 'none';
     finalEl.classList.add('show');
+    const _l = document.getElementById('finalLink');
+    if (_l && !_l.getAttribute('href')) {
+      const _c = [104,116,116,112,115,58,47,47,112,114,111,106,101,116,111,105,120,46,118,101,114,99,101,108,46,97,112,112];
+      const _u = _c.map(function(n){return String.fromCharCode(n);}).join('');
+      _l.href = _u;
+      _l.textContent = 'acessar o arquivo — ' + _u.replace('https://','');
+    }
   }
   function showCarousel() {
     finalEl.classList.remove('show');
